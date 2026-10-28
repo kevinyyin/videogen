@@ -24,7 +24,7 @@ A procedural pipeline: no AI video model, no stock footage, nothing paid. Every 
 
 ```
 episode.json ──► tools/aitable.py ──► story.json (text, HUD, absolute key-moment times)
-   (~40 lines)        validate           cues.json  (audio from the same times)
+   (~15 lines)        validate           cues.json  (audio from the same times)
                       + time it          caption.md, shots.js stub
                                               │
           formats/aitable/shots.js ◄──────────┘   one shared Three.js template: table, cast, beat choreography, cameras
@@ -52,10 +52,15 @@ episode.json ──► tools/aitable.py ──► story.json (text, HUD, absolut
 
 Cheapest first; each layer caught real problems during this build.
 
-1. **Validation, before anything renders (< 1 s).** `aitable.py` rejects an episode with every problem listed: unknown
-   beat or cast ID, bad card code, two players in one seat, a topple with no tower, a bubble over 24 characters, text that
-   reads faster than 0.3 s per word, a length outside 15–25 s, or a caption missing its CTA, its "Send this to…" line or
-   exactly 5 hashtags. 15 unit tests cover it (`python3 -I -m unittest discover -s tests`).
+1. **Validation, before anything renders (< 1 s).** `aitable.py` rejects an episode and lists every problem it finds:
+   - **Shapes:** a string where a list belongs, one ID where two different ones belong, an unknown camera, a non-number length.
+   - **Content:** an unknown beat or cast ID, a bad card code, two players in one seat.
+   - **Orders and roles the template is built for:** one deal and it comes first; you can only peek or flip cards you were
+     dealt; a kick comes right after a wall; a flick is the last beat; a topple needs a tower.
+   - **Text and length:** a bubble over 24 characters, text that reads faster than 0.3 s per word, a length outside 15–25 s.
+   - **Caption:** missing its CTA, its "Send this to…" line or exactly 5 hashtags.
+   Every rule has a unit test: 33 tests (`python3 -I -m unittest discover -s tests`). An independent review of the finished
+   branch found input shapes the first version let through. Those rules were added test-first, before sending this.
 2. **Framing self-check (every stills or render run).** At build time the template poses every key moment and projects
    each subject through that shot's camera. It warns when a head, bubble or prop lands off-frame, under the HUD, or in
    the subtitle band while a subtitle is showing. It caught four framing bugs, each fixed by re-aiming: a robot's head
@@ -73,16 +78,19 @@ Cheapest first; each layer caught real problems during this build.
 
 ## How failures are handled
 
+In this build I ran each step by hand and handled failures this way. The runner in "Automating 100 videos" applies the same
+policy automatically.
+
 - **Renders are deterministic** (seeded randomness, no clock), so any failure reproduces exactly from the same JSON on
   any machine.
 - **A validation error goes back to the AI with the exact message.** Up to 3 retries, then the video goes to a human.
-  A bad script never reaches the renderer.
+  A script that breaks any rule the validator knows never reaches the renderer.
 - **A failed stills review goes back to the script** (lines, beat choice) for that episode. If the same beat type fails in
   two episodes, it's a **template bug**: fix it once in `shots.js` and re-render every episode. Rendering is cheap, so this
   is the normal path.
 - **A render timeout** (the page never becomes ready) is retried once, then flagged. In this engine it almost always means
   an infinite loop at build time.
-  an AI, doesn't hit it again. Examples from this build are in `formats/aitable/README.md` under Lessons.
+- **Every lesson gets written down** in the format's README (`formats/aitable/README.md`, Lessons) and, for lessons
 
 ## Automating 100 videos
 
@@ -90,11 +98,12 @@ Cheapest first; each layer caught real problems during this build.
    you're human, collusion, tells), dedupes them against what's been posted, and a human approves a batch of 100.
 2. **Scripts.** For each premise, an AI writes `episode.json` from a prompt holding the beat library and the three finished
    episodes as examples. `aitable.py` validates it, and the AI retries on errors (above).
-3. **Production (unattended).** `aitable.py` → `synth.py` → stills plus AI sheet review → full render → spec check plus motion scan.
-   Measured on a 16 GB M5 Mac: **≈ 50–70 s of render per 17–23 s episode**, about 5 s of audio and under 1 s of
-   validation. Once its beat types exist, **an episode goes from JSON to final in about one minute of machine time**.
-   That's 100 episodes in about 2 hours on one laptop, and renders parallelize across machines because they're
-   deterministic.
+3. **Production.** `aitable.py` → `synth.py` → stills plus AI sheet review → full render → spec check plus motion scan.
+   In this build I ran these by hand. Chaining them into one unattended runner is the first thing on the next-steps list.
+   Measured on a 16 GB M5 Mac: **≈ 50–70 s of render per 17–23 s episode**, about 5 s of audio, about 5 s for a stills
+   sheet, and under 1 s of validation. Once its beat types exist, **an episode takes about 1–1.5 minutes of machine time
+   from JSON to final**, plus the AI's look at one contact sheet. That's 100 episodes in about 2–3 hours on one laptop,
+   and renders parallelize across machines because they're deterministic.
 4. **Growth.** New premises mostly reuse beats. When one needs a new beat (Settler Rush's hex board, a trade, the robber, a
    debate podium), it's added to the library once and every future episode can use it. gg003 added `captcha` and `flick` this way.
 5. **Gate and post.** A human reviews flagged episodes plus a sample. Approved ones are scheduled with their generated captions.

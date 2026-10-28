@@ -103,9 +103,8 @@ export async function build(studio, story) {
   // ---------------------------------------------------------------- bubbles (016 say(): sized to the lens every frame)
   const frameW = (d) => 2 * d * Math.tan((camera.fov * Math.PI) / 360) * (9 / 16);
   const bubbles = beats.map((b) => {
-    if (!b.say) return null;
-    const who = typeof b.say === 'object' ? b.say.who : (typeof b.who === 'string' ? b.who : b.target);
-    const text = typeof b.say === 'object' ? b.say.text : b.say;
+    if (!b.say_text) return null;
+    const who = b.say_who, text = b.say_text;   // resolved + tag-free in tools/aitable.py (one place decides the speaker)
     const bub = makeSpeechBubble({ lines: [text], name: who === 'you' ? 'YOU' : who, accent: cast[who].c.color || '#f2c230', width: 1 });
     bub.setPop(0); ui.add(bub.sprite);
     return { bub, who };

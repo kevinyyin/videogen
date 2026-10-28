@@ -189,6 +189,8 @@
     },
     "sub_at": 6.1,
     "sub_end": 8.85,
+    "say_who": "WREN",
+    "say_text": "Alliance?",
     "say_at": 6.8,
     "say_end": 8.8
    },
@@ -231,6 +233,8 @@
     },
     "sub_at": 13.7,
     "sub_end": 16.85,
+    "say_who": "WREN",
+    "say_text": "Alliance over.",
     "say_at": 15.5,
     "say_end": 17.0
    }

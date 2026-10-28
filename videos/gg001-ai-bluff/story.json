@@ -175,6 +175,8 @@
     },
     "sub_at": 6.1,
     "sub_end": 9.25,
+    "say_who": "VESPER",
+    "say_text": "All in.",
     "say_at": 6.3,
     "say_end": 8.3
    },
@@ -218,6 +220,8 @@
     },
     "sub_at": 13.9,
     "sub_end": 18.65,
+    "say_who": "VESPER",
+    "say_text": "gg, human.",
     "say_at": 14.9,
     "say_end": 16.9
    }

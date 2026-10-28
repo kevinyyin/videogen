@@ -40,7 +40,19 @@ Endings:
 - `then: "fold"`: the human tosses their cards, +0.8 s.
 - `after: "topple"`: the latest tower falls on the human, +1.4 s; needs an earlier `tower` beat.
 
-Duration (title through end card) must be 15–25 s. Every text must give at least 0.3 s per word.
+Duration (title through end card) must be 15–25 s. Every text must give at least 0.3 s per word. Tags (`<em>`) are only
+drawn in `title` and `end.html`; elsewhere they don't count toward limits and are stripped before display.
+
+## Sequencing rules (the validator enforces every one)
+
+The template is built for these orders and roles. Anything else would crash or render wrong, so `aitable.py` rejects it.
+- `you` sits at `near`. There's exactly one `deal`, and it's the first beat.
+- A `peek` is by `you`. `peek` and `flip` need cards: their `who` must be in the deal's `to`. `then: "fold"` needs `you` dealt.
+- `kick` comes right after a `wall` (the kicker walks into place during the wall). It can't also carry `after: "topple"`.
+- `flick` is the last beat (the target leaves the table). At most one `captcha` and one fold.
+- The CAPTCHA grid is aces, so its `text` must ask for ACES.
+- A `wall` is at most 100 chips high (2,000-chip pool). `len` can't be shorter than the beat's minimum plus its endings.
+- `cam` overrides are limited to the cameras that work in any beat: `wide`, `hero`, `overShoulder`, `twoShot`, `high`.
 
 ## Beats
 

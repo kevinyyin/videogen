@@ -123,5 +123,121 @@ class CuesAndCaption(unittest.TestCase):
         self.assertTrue(any("5 hashtags" in x for x in aitable.validate(e)))
 
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def episode(slug):
+    import json
+    return json.load(open(os.path.join(ROOT, "videos", slug, "episode.json")))
+
+
+def errs(e):
+    return " | ".join(aitable.validate(e))
+
+
+class Shapes(unittest.TestCase):
+    """Malformed episodes: wrong shapes must come back as listed messages, never a traceback or a template crash."""
+
+    def test_committed_episodes_are_valid(self):
+        for slug in ("gg001-ai-bluff", "gg002-ai-alliance", "gg003-prove-human"):
+            self.assertEqual(aitable.validate(episode(slug)), [], slug)
+
+    def test_deal_to_must_be_a_list(self):
+        e = ep(); e["beats"][0]["to"] = "you"
+        self.assertIn("list", errs(e))
+
+    def test_handshake_needs_two_different_ids(self):
+        for who in ("WREN", ["WREN"], ["WREN", "WREN"]):
+            e = episode("gg002-ai-alliance"); e["beats"][1]["who"] = who
+            self.assertIn("two different", errs(e), who)
+
+    def test_wall_who_must_be_a_list(self):
+        e = episode("gg002-ai-alliance"); e["beats"][2]["who"] = "WREN"
+        self.assertIn("list", errs(e))
+
+    def test_tower_who_must_be_one_id(self):
+        e = ep(); e["beats"][1]["who"] = ["VESPER"]
+        self.assertIn("one cast id", errs(e))
+
+    def test_cam_whitelist(self):
+        for cam in ("dolly", "kickCam"):
+            e = ep(); e["beats"][0]["cam"] = cam
+            self.assertIn("cam", errs(e), cam)
+
+    def test_kick_cannot_also_topple(self):
+        e = episode("gg002-ai-alliance"); e["beats"][3]["after"] = "topple"
+        self.assertIn("kick", errs(e))
+
+    def test_bad_types_are_messages_not_tracebacks(self):
+        cases = [("len", lambda e: e["beats"][0].__setitem__("len", "3")),
+                 ("sub", lambda e: e["beats"][0].__setitem__("sub", "<em></em>")),
+                 ("face", lambda e: e["beats"][1].__setitem__("face", "smug")),
+                 ("cast", lambda e: e.__setitem__("cast", ["you", "VESPER"])),
+                 ("end", lambda e: e.__setitem__("end", {"small": "x"})),
+                 ("stack", lambda e: e["cast"][1].__setitem__("stack", True))]
+        for word, mutate in cases:
+            e = ep(); mutate(e)
+            self.assertIn(word, errs(e), word)
+
+    def test_say_needs_text(self):
+        e = ep(); e["beats"][1]["say"] = {"who": "VESPER"}
+        self.assertIn("text", errs(e))
+
+
+class Sequences(unittest.TestCase):
+    """Orders and roles the template is built for: anything else must be rejected, not rendered wrong."""
+
+    def test_len_cannot_cut_a_beat_short(self):
+        e = ep(); e["beats"][1]["len"] = 1.8
+        self.assertIn("shorter than", errs(e))
+
+    def test_one_deal_and_it_comes_first(self):
+        e = ep(); e["beats"] = [e["beats"][1], e["beats"][0]] + e["beats"][2:]
+        self.assertIn("first beat", errs(e))
+        e = ep(); e["beats"].insert(1, dict(e["beats"][0]))
+        self.assertIn("one deal", errs(e))
+
+    def test_peek_is_by_you_and_cards_must_be_dealt(self):
+        e = ep(); e["beats"][2]["who"] = "VESPER"; del e["beats"][2]["then"]
+        self.assertIn("peek", errs(e))
+        e = ep(); e["beats"][0]["to"] = ["VESPER"]
+        self.assertIn("dealt", errs(e))
+
+    def test_kick_must_follow_a_wall(self):
+        e = episode("gg002-ai-alliance"); e["beats"][2] = {"type": "tower", "who": "ORBIT", "height": 60}
+        self.assertIn("right after a wall", errs(e))
+
+    def test_flick_must_be_last(self):
+        e = episode("gg003-prove-human"); e["beats"] = [e["beats"][0], e["beats"][2], e["beats"][1]]
+        self.assertIn("last beat", errs(e))
+
+    def test_captcha_grid_is_aces(self):
+        e = episode("gg003-prove-human"); e["beats"][1]["text"] = "SELECT ALL THE KINGS"
+        self.assertIn("ACES", errs(e))
+
+    def test_wall_height_fits_the_chip_pool(self):
+        e = episode("gg002-ai-alliance"); e["beats"][2]["height"] = 135
+        self.assertIn("height", errs(e))
+
+    def test_you_sits_near(self):
+        e = ep(); e["cast"][0]["seat"], e["cast"][1]["seat"] = "far", "near"
+        self.assertIn("near", errs(e))
+
+
+class PlainText(unittest.TestCase):
+    """Tags don't count toward limits (Review Focus 4), and they never reach the screen as literal text."""
+
+    def test_tags_are_stripped_from_subs_bubbles_and_captcha(self):
+        e = episode("gg003-prove-human")
+        e["beats"][1]["sub"] = "Prove <em>you're</em> human."
+        e["beats"][0]["say"] = {"who": "VESPER", "text": "You <em>haven't</em> blinked."}
+        e["beats"][1]["text"] = "SELECT ALL THE <em>ACES</em>"
+        s = aitable.story(e, aitable.layout(e))
+        self.assertIn("Prove you're human.", [x[2] for x in s["subs"]])
+        b0, b1 = s["episode"]["beats"][0], s["episode"]["beats"][1]
+        self.assertEqual((b0["say_who"], b0["say_text"]), ("VESPER", "You haven't blinked."))
+        self.assertEqual(b1["text"], "SELECT ALL THE ACES")
+
+
 if __name__ == "__main__":
     unittest.main()

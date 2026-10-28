@@ -157,6 +157,8 @@
     },
     "sub_at": 2.9,
     "sub_end": 5.95,
+    "say_who": "VESPER",
+    "say_text": "You haven't blinked.",
     "say_at": 4.6,
     "say_end": 6.1
    },
