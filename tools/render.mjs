@@ -62,7 +62,7 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
-page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') console.log('[page]', m.text()); });
+page.on('console', (m) => { if (['error', 'warn', 'warning'].includes(m.type())) console.log('[page]', m.text()); });   // puppeteer types console.warn as 'warn'
 page.on('pageerror', (e) => console.log('[page error]', e.message));
 await page.goto(url, { waitUntil: 'load' });
 await page.waitForFunction('window.EDSTUDIO_READY || window.EDSTUDIO_ERROR', { timeout: 120000 });

@@ -111,7 +111,8 @@ export function makeChips(parent, n = 2000) {
     begin() { i = 0; },
     add(x, y, z, rx = 0, rz = 0, colorIdx = 0) {
       if (i >= n) return;
-      d.position.set(x, y, z); d.rotation.set(rx, (Math.sin(i * 12.9898) * 43758.5453 % 1) * 6.283, rz);   // hashed spin: a regular step stacked into a helix d.updateMatrix();
+      // hashed spin per chip: a regular step stacked the edge stripes into a helix
+      d.position.set(x, y, z); d.rotation.set(rx, (Math.sin(i * 12.9898) * 43758.5453 % 1) * 6.283, rz); d.updateMatrix();
       body.setMatrixAt(i, d.matrix); body.setColorAt(i, CHIP_COLORS[((colorIdx % 4) + 4) % 4]); i++;
     },
     end() {
