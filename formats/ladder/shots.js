@@ -188,10 +188,17 @@ export async function build(studio, story) {
     podium: [[2.2, 2.5, 3.6], [0, 1.4, -2.8], 40],   // high 3/4 from the press rows: straight on, the lectern hid the speaker
     space: [[0, 1.4, 1004.6], [0, 0.6, 1000], 50],
   };
+  // a planet-size flood gets a fixed angle: re-aimed at the region, Paris sat at eye level 70 m off and space inside Earth
+  const FLOOD_WIDE = {
+    paris: [[0, 20, 95], [0, 12, 25], 50],   // high over the Champ de Mars: the sea of sheep below, the tower behind
+    space: [[0, 2.6, 1009], [0, 0.8, 1000], 50],   // the cast in front of the whitening planet
+  };
   const cams = {
     wide(r, t) {   // the place's establishing angle, re-aimed at the gag's subject and backed off by its size
       const [p, a, fov] = WIDE[r.place], k = lerp(1, 0.93, smooth(u01(r, t)));
-      if (!r.at || r.title) { const P = p.map((v, i) => a[i] + (v - a[i]) * k); return { p: W(r.place, P).toArray(), a: W(r.place, a).toArray(), fov }; }
+      const fixed = (P0, A0, F0) => ({ p: W(r.place, P0.map((v, i) => A0[i] + (v - A0[i]) * k)).toArray(), a: W(r.place, A0).toArray(), fov: F0 });
+      if (!r.at || r.title) return fixed(p, a, fov);
+      if (r.gag === 'flood' && FLOOD_WIDE[r.place]) return fixed(...FLOOD_WIDE[r.place]);
       const f = world.focusOf(r, t, r.place), s = Math.min(2.2, Math.max(1, f.size / 2.6)) * k;
       const aim = r.say_who ? f.pos.clone().lerp(speakerHead(r.say_who), 0.3) : f.pos;   // lean toward the speaker: its bubble stays attached
       if (r.place === 'street' && f.size > 3.5) {   // big subjects: shoot down the street (depth) instead of across it into the facades

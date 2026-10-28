@@ -15,7 +15,7 @@ const DROP_H = 14, PILE_CAP = 4, PILE_SCALE = { moon: 1.5 };
 const REGIONS = {
   livingroom: { table: { x0: -4.15, x1: -2.65, z0: -1.35, z1: -0.55, y: 0.75 }, room: { x0: -5, x1: -1.5, z0: -2.8, z1: 1.0, y: 0 } },
   street: { road: { x0: -8, x1: 8, z0: 0, z1: 8, y: 0 }, pile: { x0: -6, x1: 0, z0: 0.5, z1: 4.5, y: 0 } },
-  paris: { lawn: { x0: -18, x1: 18, z0: 12, z1: 45, y: 0, s: 1.3 }, tower: { x0: -18, x1: 18, z0: -18, z1: 18, y: 0, s: 1.3 } },
+  paris: { lawn: { x0: -18, x1: 18, z0: 12, z1: 62, y: 0, s: 1.3 }, tower: { x0: -18, x1: 18, z0: -18, z1: 18, y: 0, s: 1.3 } },
   casino: { table: { x0: -1.5, x1: 1.5, z0: -0.8, z1: 0.8, y: 0.8 } },
   space: { earth: { sphere: true } },
 };

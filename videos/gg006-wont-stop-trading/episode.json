@@ -1,0 +1,18 @@
+{"title": "What if the AI wouldn't <em>stop</em> trading?", "seed": 6,
+ "cast": {"you": {"top": "#5b8def"}, "ai": {"name": "ORBIT", "color": "#e8553f"}},
+ "hud": {"label": "SHEEP OFFERED", "prefix": ""},
+ "rungs": [
+  {"place": "livingroom", "gag": "poof", "prop": "sheep", "at": "table", "say": "1 sheep for your wheat?", "sub": "No.", "hud": 1, "cam": "wide"},
+  {"place": "livingroom", "gag": "flood", "prop": "sheep", "count": 2, "at": "table", "say": "2 sheep?", "sub": "No.", "hud": 2},
+  {"place": "livingroom", "gag": "flood", "prop": "sheep", "count": 8, "at": "table", "say": "8 sheep?", "sub": "Still no.", "hud": 8},
+  {"place": "livingroom", "gag": "flood", "prop": "sheep", "count": 64, "at": "room", "say": "64 sheep?", "hud": 64},
+  {"place": "street", "gag": "flood", "prop": "sheep", "count": 1000, "at": "road", "say": "1,000 sheep?", "hud": 1000, "react": true},
+  {"place": "paris", "gag": "flood", "prop": "sheep", "count": 1000000, "at": "lawn", "say": "A million sheep?", "hud": 1000000},
+  {"place": "street", "gag": "say", "say": {"who": "you", "text": "…fine."}, "hud": 1000000},
+  {"place": "space", "gag": "flood", "prop": "sheep", "count": 8000000000, "at": "earth", "say": "8 billion sheep.", "hud": 8000000000},
+  {"place": "space", "gag": "say", "say": "Pleasure doing business.", "hud": 8000000000}],
+ "end": {"html": "Would you take the <em>deal</em>?", "small": "PLAY THEM FREE · GGHUMAN.AI"},
+ "caption": {"hook": "I said no to one sheep 🐑",
+  "summary": "The AI kept doubling the offer until the whole planet was sheep. Play them free at gghuman.ai.",
+  "cta": "Would you take the deal? 👇", "send": "Send this to the friend who never says no to a deal",
+  "tags": ["#animation", "#ai", "#whatif", "#gghuman", "#catan"]}}

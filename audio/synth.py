@@ -1246,7 +1246,7 @@ def sfx_sheep_baa(rng, pitch=1.0):
     tone = sum(np.sin(k * ph) / k for k in range(1, 7))
     tone = tone + 0.6 * bp(tone, 900, 2400)
     env = np.clip(np.minimum(t / 0.05, (dur - t) / 0.15), 0, 1)
-    return Sound(norm(lp(tone * env, 3000)), onsets=[(0.0, "transient")])
+    return Sound(norm(lp(tone * env, 3000)), onsets=[(0.0, "soft")])   # 50 ms attack: a gradual onset
 
 
 def amb_room_tone(dur, rng):

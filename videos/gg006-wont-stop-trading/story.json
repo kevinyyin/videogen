@@ -1,0 +1,407 @@
+{
+ "tone": "funny",
+ "look": {
+  "exposure": 1.05
+ },
+ "fps": 30,
+ "duration": 36.9,
+ "title": {
+  "html": "What if the AI wouldn't <em>stop</em> trading?",
+  "in": -0.4,
+  "out": 2.0
+ },
+ "shots": [
+  {
+   "cam": "title",
+   "t0": 0.0,
+   "t1": 2.6
+  },
+  {
+   "cam": "livingroom",
+   "t0": 2.6,
+   "t1": 5.6
+  },
+  {
+   "cam": "livingroom",
+   "t0": 5.6,
+   "t1": 9.2
+  },
+  {
+   "cam": "livingroom",
+   "t0": 9.2,
+   "t1": 12.8
+  },
+  {
+   "cam": "livingroom",
+   "t0": 12.8,
+   "t1": 16.4
+  },
+  {
+   "cam": "street",
+   "t0": 16.4,
+   "t1": 20.0
+  },
+  {
+   "cam": "paris",
+   "t0": 20.0,
+   "t1": 23.6
+  },
+  {
+   "cam": "street",
+   "t0": 23.6,
+   "t1": 26.2
+  },
+  {
+   "cam": "space",
+   "t0": 26.2,
+   "t1": 29.8
+  },
+  {
+   "cam": "space",
+   "t0": 29.8,
+   "t1": 32.4
+  }
+ ],
+ "subs": [
+  [
+   2.9,
+   5.45,
+   "No."
+  ],
+  [
+   5.9,
+   9.05,
+   "No."
+  ],
+  [
+   9.5,
+   12.65,
+   "Still no."
+  ]
+ ],
+ "hudLabel": "SHEEP OFFERED",
+ "hudPrefix": "",
+ "hud": [
+  {
+   "t0": 0.0,
+   "t1": 2.6,
+   "from": 0,
+   "to": 0,
+   "time": "",
+   "age": ""
+  },
+  {
+   "t0": 2.6,
+   "t1": 5.6,
+   "from": 0,
+   "to": 1,
+   "time": "",
+   "age": "",
+   "r0": 3.5,
+   "r1": 4.1
+  },
+  {
+   "t0": 5.6,
+   "t1": 9.2,
+   "from": 1,
+   "to": 2,
+   "time": "",
+   "age": "",
+   "r0": 6.2,
+   "r1": 6.8
+  },
+  {
+   "t0": 9.2,
+   "t1": 12.8,
+   "from": 2,
+   "to": 8,
+   "time": "",
+   "age": "",
+   "r0": 9.8,
+   "r1": 10.4
+  },
+  {
+   "t0": 12.8,
+   "t1": 16.4,
+   "from": 8,
+   "to": 64,
+   "time": "",
+   "age": "",
+   "r0": 13.4,
+   "r1": 14.0
+  },
+  {
+   "t0": 16.4,
+   "t1": 20.0,
+   "from": 64,
+   "to": 1000,
+   "time": "",
+   "age": "",
+   "r0": 17.0,
+   "r1": 17.6
+  },
+  {
+   "t0": 20.0,
+   "t1": 23.6,
+   "from": 1000,
+   "to": 1000000,
+   "time": "",
+   "age": "",
+   "r0": 20.6,
+   "r1": 21.2
+  },
+  {
+   "t0": 23.6,
+   "t1": 26.2,
+   "from": 1000000,
+   "to": 1000000,
+   "time": "",
+   "age": ""
+  },
+  {
+   "t0": 26.2,
+   "t1": 29.8,
+   "from": 1000000,
+   "to": 8000000000,
+   "time": "",
+   "age": "",
+   "r0": 26.8,
+   "r1": 27.4
+  },
+  {
+   "t0": 29.8,
+   "t1": 36.9,
+   "from": 8000000000,
+   "to": 8000000000,
+   "time": "",
+   "age": ""
+  }
+ ],
+ "end": {
+  "in": 32.4,
+  "html": "Would you take the <em>deal</em>?",
+  "small": "PLAY THEM FREE · GGHUMAN.AI"
+ },
+ "dips": [
+  [
+   0.0,
+   0.0,
+   0.45
+  ]
+ ],
+ "finalFade": [
+  32.4,
+  33.2
+ ],
+ "debugView": {
+  "center": [
+   0,
+   0,
+   0
+  ],
+  "height": 14
+ },
+ "episode": {
+  "seed": 6,
+  "cast": {
+   "you": {
+    "top": "#5b8def"
+   },
+   "ai": {
+    "name": "ORBIT",
+    "color": "#e8553f"
+   }
+  },
+  "hud": {
+   "label": "SHEEP OFFERED",
+   "prefix": ""
+  },
+  "rungs": [
+   {
+    "place": "livingroom",
+    "gag": "poof",
+    "prop": "sheep",
+    "at": {
+     "pop": 3.5
+    },
+    "say": "1 sheep for your wheat?",
+    "sub": "No.",
+    "hud": 1,
+    "cam": "wide",
+    "t0": 2.6,
+    "t1": 5.6,
+    "anchor": "table",
+    "sub_at": 2.9,
+    "sub_end": 5.45,
+    "say_who": "ai",
+    "say_text": "1 sheep for your wheat?",
+    "say_at": 2.75,
+    "say_end": 5.1
+   },
+   {
+    "place": "livingroom",
+    "gag": "flood",
+    "prop": "sheep",
+    "count": 2,
+    "at": {
+     "fill0": 6.2,
+     "fill1": 8.4
+    },
+    "say": "2 sheep?",
+    "sub": "No.",
+    "hud": 2,
+    "t0": 5.6,
+    "t1": 9.2,
+    "anchor": "table",
+    "sub_at": 5.9,
+    "sub_end": 9.05,
+    "say_who": "ai",
+    "say_text": "2 sheep?",
+    "say_at": 5.75,
+    "say_end": 7.75
+   },
+   {
+    "place": "livingroom",
+    "gag": "flood",
+    "prop": "sheep",
+    "count": 8,
+    "at": {
+     "fill0": 9.8,
+     "fill1": 12.0
+    },
+    "say": "8 sheep?",
+    "sub": "Still no.",
+    "hud": 8,
+    "t0": 9.2,
+    "t1": 12.8,
+    "anchor": "table",
+    "sub_at": 9.5,
+    "sub_end": 12.65,
+    "say_who": "ai",
+    "say_text": "8 sheep?",
+    "say_at": 9.35,
+    "say_end": 11.35
+   },
+   {
+    "place": "livingroom",
+    "gag": "flood",
+    "prop": "sheep",
+    "count": 64,
+    "at": {
+     "fill0": 13.4,
+     "fill1": 15.6
+    },
+    "say": "64 sheep?",
+    "hud": 64,
+    "t0": 12.8,
+    "t1": 16.4,
+    "anchor": "room",
+    "sub_at": 13.1,
+    "sub_end": 16.25,
+    "say_who": "ai",
+    "say_text": "64 sheep?",
+    "say_at": 12.95,
+    "say_end": 14.95
+   },
+   {
+    "place": "street",
+    "gag": "flood",
+    "prop": "sheep",
+    "count": 1000,
+    "at": {
+     "fill0": 17.0,
+     "fill1": 19.2
+    },
+    "say": "1,000 sheep?",
+    "hud": 1000,
+    "react": true,
+    "t0": 16.4,
+    "t1": 20.0,
+    "anchor": "road",
+    "sub_at": 16.7,
+    "sub_end": 19.85,
+    "say_who": "ai",
+    "say_text": "1,000 sheep?",
+    "say_at": 16.55,
+    "say_end": 18.55
+   },
+   {
+    "place": "paris",
+    "gag": "flood",
+    "prop": "sheep",
+    "count": 1000000,
+    "at": {
+     "fill0": 20.6,
+     "fill1": 22.8
+    },
+    "say": "A million sheep?",
+    "hud": 1000000,
+    "t0": 20.0,
+    "t1": 23.6,
+    "anchor": "lawn",
+    "sub_at": 20.3,
+    "sub_end": 23.45,
+    "say_who": "ai",
+    "say_text": "A million sheep?",
+    "say_at": 20.15,
+    "say_end": 22.15
+   },
+   {
+    "place": "street",
+    "gag": "say",
+    "say": {
+     "who": "you",
+     "text": "…fine."
+    },
+    "hud": 1000000,
+    "t0": 23.6,
+    "t1": 26.2,
+    "anchor": null,
+    "at": {},
+    "sub_at": 23.9,
+    "sub_end": 26.05,
+    "say_who": "you",
+    "say_text": "…fine.",
+    "say_at": 23.75,
+    "say_end": 25.75
+   },
+   {
+    "place": "space",
+    "gag": "flood",
+    "prop": "sheep",
+    "count": 8000000000,
+    "at": {
+     "fill0": 26.8,
+     "fill1": 29.0
+    },
+    "say": "8 billion sheep.",
+    "hud": 8000000000,
+    "t0": 26.2,
+    "t1": 29.8,
+    "anchor": "earth",
+    "sub_at": 26.5,
+    "sub_end": 29.65,
+    "say_who": "ai",
+    "say_text": "8 billion sheep.",
+    "say_at": 26.35,
+    "say_end": 28.35
+   },
+   {
+    "place": "space",
+    "gag": "say",
+    "say": "Pleasure doing business.",
+    "hud": 8000000000,
+    "t0": 29.8,
+    "t1": 32.4,
+    "anchor": null,
+    "at": {},
+    "sub_at": 30.1,
+    "sub_end": 32.25,
+    "say_who": "ai",
+    "say_text": "Pleasure doing business.",
+    "say_at": 29.95,
+    "say_end": 31.95
+   }
+  ]
+ }
+}

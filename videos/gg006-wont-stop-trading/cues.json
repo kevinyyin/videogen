@@ -1,0 +1,708 @@
+{
+ "title": "What if the AI wouldn't stop trading?",
+ "duration": 36.9,
+ "target_lufs": -15.0,
+ "limiter_ceiling_dbtp": -1.5,
+ "end_fade": [
+  35.9,
+  36.9
+ ],
+ "stem_gain_db": {
+  "music": -6.0,
+  "sfx": 13.0,
+  "amb": 10.0
+ },
+ "stem_dynamics": {
+  "music": {
+   "limit_dbfs": -3.0,
+   "lim_win": 0.015
+  },
+  "sfx": {
+   "comp_thr_dbfs": -15.0,
+   "ratio": 2.5,
+   "win": 0.004,
+   "limit_dbfs": -4.0
+  }
+ },
+ "sfx_lowpass_hz": 5000,
+ "shots": [
+  0.0,
+  2.6,
+  5.6,
+  9.2,
+  12.8,
+  16.4,
+  20.0,
+  23.6,
+  26.2,
+  29.8,
+  32.4,
+  36.9
+ ],
+ "ambience": [
+  {
+   "sound": "crowd_cheer",
+   "t0": 17.0,
+   "t1": 19.0,
+   "fade_in": 0.2,
+   "fade_out": 0.4,
+   "gain_db": -34,
+   "seed": 9,
+   "args": {
+    "excite": 0.6
+   }
+  },
+  {
+   "sound": "room_tone",
+   "t0": 0.0,
+   "t1": 16.4,
+   "fade_in": 0.3,
+   "fade_out": 0.06,
+   "gain_db": -38,
+   "seed": 1
+  },
+  {
+   "sound": "city_day",
+   "t0": 16.4,
+   "t1": 20.0,
+   "fade_in": 0.3,
+   "fade_out": 0.06,
+   "gain_db": -40,
+   "seed": 4,
+   "args": {
+    "murmur": 0.5,
+    "traffic": 0.6
+   }
+  },
+  {
+   "sound": "city_day",
+   "t0": 20.0,
+   "t1": 23.6,
+   "fade_in": 0.3,
+   "fade_out": 0.06,
+   "gain_db": -42,
+   "seed": 7,
+   "args": {
+    "murmur": 0.4,
+    "traffic": 0.2
+   }
+  },
+  {
+   "sound": "wind",
+   "t0": 20.0,
+   "t1": 23.6,
+   "fade_in": 0.3,
+   "fade_out": 0.06,
+   "gain_db": -46,
+   "seed": 8
+  },
+  {
+   "sound": "city_day",
+   "t0": 23.6,
+   "t1": 26.2,
+   "fade_in": 0.3,
+   "fade_out": 0.06,
+   "gain_db": -40,
+   "seed": 10,
+   "args": {
+    "murmur": 0.5,
+    "traffic": 0.6
+   }
+  },
+  {
+   "sound": "room_tone",
+   "t0": 26.2,
+   "t1": 36.9,
+   "fade_in": 0.3,
+   "fade_out": 0.06,
+   "gain_db": -50,
+   "seed": 13
+  }
+ ],
+ "events": [
+  {
+   "t": 3.5,
+   "sound": "poof",
+   "gain_db": -24,
+   "pan": 0.0,
+   "room": -16,
+   "args": {}
+  },
+  {
+   "t": 2.75,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 7.945,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.13
+   }
+  },
+  {
+   "t": 7.267,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.9
+   }
+  },
+  {
+   "t": 6.201,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.07
+   }
+  },
+  {
+   "t": 7.235,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.1
+   }
+  },
+  {
+   "t": 7.021,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.11
+   }
+  },
+  {
+   "t": 5.75,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 10.4,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.12
+   }
+  },
+  {
+   "t": 11.406,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.97
+   }
+  },
+  {
+   "t": 10.984,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.07
+   }
+  },
+  {
+   "t": 10.225,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.02
+   }
+  },
+  {
+   "t": 11.571,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.91
+   }
+  },
+  {
+   "t": 9.35,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 15.167,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.07
+   }
+  },
+  {
+   "t": 15.257,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.93
+   }
+  },
+  {
+   "t": 13.605,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.12
+   }
+  },
+  {
+   "t": 15.171,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.98
+   }
+  },
+  {
+   "t": 13.606,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.88
+   }
+  },
+  {
+   "t": 12.95,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 18.397,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.92
+   }
+  },
+  {
+   "t": 19.093,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.04
+   }
+  },
+  {
+   "t": 17.442,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.06
+   }
+  },
+  {
+   "t": 17.793,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.17
+   }
+  },
+  {
+   "t": 19.001,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.01
+   }
+  },
+  {
+   "t": 16.55,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 22.018,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.08
+   }
+  },
+  {
+   "t": 22.372,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.19
+   }
+  },
+  {
+   "t": 20.663,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.94
+   }
+  },
+  {
+   "t": 21.924,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.92
+   }
+  },
+  {
+   "t": 21.896,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.84
+   }
+  },
+  {
+   "t": 20.15,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 28.736,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.01
+   }
+  },
+  {
+   "t": 27.057,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.07
+   }
+  },
+  {
+   "t": 27.487,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.88
+   }
+  },
+  {
+   "t": 27.864,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 0.86
+   }
+  },
+  {
+   "t": 27.262,
+   "sound": "sheep_baa",
+   "gain_db": -30,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.15
+   }
+  },
+  {
+   "t": 26.35,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  },
+  {
+   "t": 29.95,
+   "sound": "robot_bleep",
+   "gain_db": -28,
+   "pan": 0.0,
+   "room": -16,
+   "args": {
+    "pitch": 1.0,
+    "n": 2
+   }
+  }
+ ],
+ "music": {
+  "instrument": "piano",
+  "gain_db": 0.0,
+  "reverb_db": -10.0,
+  "pad_db": 2.0,
+  "pad_reverb_db": -5.0,
+  "mallet_db": -2.0,
+  "strings_db": 8.0,
+  "drums_db": -7.0,
+  "leveler": {
+   "thr_rel_db": 3.0,
+   "ratio": 2.5,
+   "tau": 0.25
+  },
+  "end": 36.9,
+  "chords": [
+   [
+    2.0,
+    "Cm"
+   ],
+   [
+    4.667,
+    "Ab"
+   ],
+   [
+    7.333,
+    "Fm"
+   ],
+   [
+    10.0,
+    "G"
+   ],
+   [
+    12.667,
+    "Cm"
+   ],
+   [
+    15.333,
+    "Ab"
+   ],
+   [
+    18.0,
+    "Fm"
+   ],
+   [
+    20.667,
+    "G"
+   ],
+   [
+    23.333,
+    "Cm"
+   ],
+   [
+    26.0,
+    "Ab"
+   ],
+   [
+    28.667,
+    "Fm"
+   ],
+   [
+    31.333,
+    "G"
+   ],
+   [
+    32.4,
+    "Ab"
+   ],
+   [
+    33.8,
+    "G"
+   ],
+   [
+    35.2,
+    "C"
+   ]
+  ],
+  "sections": [
+   {
+    "t0": 2.0,
+    "t1": 36.9,
+    "style": "strings",
+    "vel": [
+     [
+      2.0,
+      0.24
+     ],
+     [
+      32.4,
+      0.34
+     ],
+     [
+      36.9,
+      0.24
+     ]
+    ],
+    "step": 0.3333,
+    "pattern": [
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     2,
+     0
+    ],
+    "octave": 1,
+    "sustain": 0.3,
+    "len": 0.9
+   }
+  ],
+  "drum_patterns": [
+   {
+    "t0": 2.0,
+    "t1": 32.4,
+    "step": 0.6667,
+    "pattern": [
+     1.0,
+     0.7,
+     0.85,
+     0.7
+    ],
+    "vel": 0.5,
+    "kind": "taiko"
+   }
+  ],
+  "drums": [
+   [
+    2.0,
+    0.6,
+    "boom"
+   ]
+  ],
+  "melody": [],
+  "mallet_melody": [],
+  "stings": [],
+  "pad": [
+   {
+    "t0": 2.0,
+    "t1": 4.0,
+    "notes": [
+     24,
+     36,
+     43
+    ],
+    "level": 1.5,
+    "attack": 0.15,
+    "release": 0.8,
+    "hp": 30
+   },
+   {
+    "t0": 1.7,
+    "t1": 36.9,
+    "notes": [
+     36,
+     48,
+     55
+    ],
+    "level": 0.8,
+    "attack": 0.8,
+    "release": 0.8
+   }
+  ],
+  "ducks": [],
+  "auto_duck": {
+   "db": -4.0,
+   "categories": [
+    "prop"
+   ],
+   "lookahead": 0.04,
+   "hold": 0.4,
+   "smooth": 0.2,
+   "max_len": 1.0
+  },
+  "eq": [
+   {
+    "f": 2800,
+    "q": 0.8,
+    "db": -2.0
+   },
+   {
+    "f": 6500,
+    "q": 0.6,
+    "db": -4.0
+   }
+  ]
+ }
+}
