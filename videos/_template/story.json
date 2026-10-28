@@ -1,0 +1,51 @@
+{
+  "look": {
+    "exposure": 1.2
+  },
+  "fps": 30,
+  "duration": 10.0,
+  "title": {
+    "html": "What your dad did every night after you <em>fell asleep</em>",
+    "in": 0.3,
+    "out": 3.0
+  },
+  "hudLabel": "NIGHTS HE TUCKED YOU IN",
+  "hud": [
+    {
+      "t0": 0.0,
+      "t1": 10.0,
+      "from": 0,
+      "to": 1,
+      "r0": 7.0,
+      "r1": 7.1,
+      "time": "9:41 PM",
+      "age": "YOU'RE 6"
+    }
+  ],
+  "subs": [
+    [
+      3.4,
+      9.6,
+      "Every night. Even the ones you don't remember."
+    ]
+  ],
+  "dips": [
+    [
+      0.0,
+      0.0,
+      0.45
+    ]
+  ],
+  "finalFade": [
+    9.4,
+    10.0
+  ],
+  "debugView": {
+    "center": [
+      -0.8,
+      0,
+      -0.3
+    ],
+    "height": 7.5
+  }
+}

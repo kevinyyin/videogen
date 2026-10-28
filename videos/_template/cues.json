@@ -1,0 +1,188 @@
+{
+ "title": "template - 10 s soft/minimal mix",
+ "duration": 10.0,
+ "target_lufs": -15.0,
+ "limiter_ceiling_dbtp": -1.5,
+ "end_fade": [
+  9.9,
+  10.0
+ ],
+ "stem_gain_db": {
+  "music": 0.0,
+  "sfx": -9.0,
+  "amb": -8.0
+ },
+ "stem_dynamics": {
+  "music": {
+   "limit_dbfs": -3.0,
+   "lim_win": 0.015
+  },
+  "sfx": {
+   "comp_thr_dbfs": -20.0,
+   "ratio": 3.0,
+   "win": 0.004,
+   "limit_dbfs": -12.0
+  }
+ },
+ "shots": [
+  0,
+  6,
+  10
+ ],
+ "ambience": [
+  {
+   "sound": "room_tone",
+   "t0": 0.0,
+   "t1": 10.0,
+   "fade_in": 0.5,
+   "fade_out": 0.6,
+   "gain_db": -44
+  }
+ ],
+ "events": [
+  {
+   "t": 1.0,
+   "sound": "door_open",
+   "args": {
+    "creak": 0.35,
+    "pitch": 0.8
+   },
+   "gain_db": -24,
+   "pan": -0.3,
+   "room": -14
+  },
+  {
+   "sound": "footsteps",
+   "t0": 2.0,
+   "t1": 5.2,
+   "pan0": -0.3,
+   "pan1": 0.1,
+   "gain_db": -30,
+   "room": -16
+  },
+  {
+   "t": 6.6,
+   "sound": "blanket_rustle",
+   "args": {
+    "dur": 0.8,
+    "softness": 0.9,
+    "intensity": 0.6
+   },
+   "gain_db": -27,
+   "pan": 0.1,
+   "room": -18
+  }
+ ],
+ "music": {
+  "gain_db": 0.0,
+  "reverb_db": -6.5,
+  "pad_db": -6.0,
+  "pad_reverb_db": -4.0,
+  "leveler": {
+   "thr_rel_db": 3.0,
+   "ratio": 2.5,
+   "tau": 0.25
+  },
+  "end": 10.0,
+  "chords": [
+   [
+    0.3,
+    "F"
+   ],
+   [
+    3.0,
+    "C/E"
+   ],
+   [
+    6.0,
+    "Dm"
+   ],
+   [
+    8.0,
+    "Bb"
+   ]
+  ],
+  "sections": [
+   {
+    "t0": 0.3,
+    "t1": 10.0,
+    "style": "held",
+    "vel": [
+     [
+      0.3,
+      0.24
+     ],
+     [
+      10.0,
+      0.26
+     ]
+    ],
+    "roll": 0.07
+   }
+  ],
+  "melody": [
+   [
+    1.2,
+    72,
+    0.28
+   ],
+   [
+    2.2,
+    69,
+    0.25
+   ],
+   [
+    3.0,
+    67,
+    0.27
+   ],
+   [
+    4.8,
+    72,
+    0.25
+   ],
+   [
+    6.0,
+    69,
+    0.28
+   ],
+   [
+    7.0,
+    65,
+    0.24
+   ],
+   [
+    8.0,
+    65,
+    0.26
+   ]
+  ],
+  "stings": [],
+  "pad": [],
+  "ducks": [],
+  "eq": [
+   {
+    "f": 2800,
+    "q": 0.8,
+    "db": -2.0
+   },
+   {
+    "f": 6500,
+    "q": 0.6,
+    "db": -4.0
+   }
+  ],
+  "auto_duck": {
+   "db": -0.8,
+   "categories": [
+    "door",
+    "cloth"
+   ],
+   "lookahead": 0.08,
+   "hold": 0.35,
+   "smooth": 0.15,
+   "max_len": 1.0
+  }
+ },
+ "sfx_lowpass_hz": 4200
+}

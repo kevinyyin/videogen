@@ -1,0 +1,23 @@
+{
+  "name": "edstudio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EDStudio — procedural short-form videos (Three.js + headless Chrome + ffmpeg).",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "node tools/doctor.mjs",
+    "doctor": "node tools/doctor.mjs",
+    "stills": "node tools/render.mjs --stills",
+    "render": "node tools/render.mjs",
+    "audio": "python3 -I audio/synth.py",
+    "new": "node tools/new-video.mjs"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "1.1.0",
+    "@fontsource/inter": "5.1.1",
+    "@fontsource/newsreader": "5.1.1",
+    "puppeteer-core": "23.11.1",
+    "three": "0.170.0"
+  }
+}
