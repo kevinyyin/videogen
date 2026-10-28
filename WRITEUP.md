@@ -22,7 +22,7 @@ Each video ends on a held question card, **PLAY THEM FREE · GGHUMAN.AI**, and t
 it felt tame next to what holds attention on Reels. The ladder keeps the same pipeline and swaps the content model:
 instead of a few beats on one table, 9 rungs of escalation across six places.
 
-## How it's built
+## The workflow and code
 
 A procedural pipeline: no AI video model, no stock footage, nothing paid. Every frame is code.
 
@@ -59,7 +59,7 @@ episode.json ──► tools/ladder.py ──► story.json (text, HUD, absolute
   `formats/aitable/`, `tools/ladder.py`, `tools/aitable.py`, `tests/`, `videos/gg*`, new synth voices (poof, chicken,
   sheep, chips, robot) and one bug fix in `tools/render.mjs`.
 
-## How I check quality
+## How I check output quality
 
 Cheapest first. Each layer caught real problems during this build.
 
@@ -100,9 +100,9 @@ Cheapest first. Each layer caught real problems during this build.
    camera call reset them every frame). It was fixed, and a 4-fps strip of each gag's window is now part of the check.
 6. **A human watches before posting.** At 100 videos: every flagged episode plus a random 10 %.
 
-## How failures are handled
+## How I handle failures
 
-In this build I ran each step by hand and handled failures this way. The runner in "Automating 100 videos" applies the
+In this build I ran each step by hand and handled failures this way. The runner in "How I would automate 100 videos" applies the
 same policy automatically.
 
 - **Renders are deterministic** (seeded randomness, no clock), so any failure reproduces from the same JSON on any
@@ -119,7 +119,7 @@ same policy automatically.
 - **Every lesson gets written down** in the format's README (`formats/ladder/README.md`, Lessons), so the next run, by me or an AI,
   doesn't hit it again.
 
-## Automating 100 videos
+## How I would automate 100 videos
 
 1. **Premises.** An AI brainstorms 150+ escalation premises from the site's games (bluffs, raises, trades, the robber,
    alliances, an AI that never folds), dedupes them against what's been posted, and a human approves a batch of 100.

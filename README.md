@@ -13,7 +13,7 @@ and a gag library do the rest.
 [gg005 — What if the AI kept raising the bet?](videos/gg005-keeps-raising/final.mp4) ·
 [gg006 — What if the AI wouldn't stop trading?](videos/gg006-wont-stop-trading/final.mp4)
 
-- Write-up (workflow, quality checks, failure handling, scaling to 100): [formats/aitable/WRITEUP.md](formats/aitable/WRITEUP.md)
+- Write-up (workflow, quality checks, failure handling, scaling to 100): [WRITEUP.md](WRITEUP.md)
 - Gag library, places, props + how to make an episode: [formats/ladder/README.md](formats/ladder/README.md)
 
 **Format #1, "AI Table"** (`formats/aitable/`, `tools/aitable.py`): toy-sized players on a giant poker table, 15–25 s.
