@@ -18,6 +18,7 @@ import { buildParis } from '@engine/sets/paris.js';
 import { buildPodium, DIMS as PODIUM } from '@engine/sets/podium.js';
 import { buildSpace } from '@engine/sets/tech.js';
 import { makeRobot } from '/formats/aitable/pieces.js';
+import { makeProp, makeSheepFlood } from './props.js';
 
 // place offsets + view settings (space is far away on -z: buildSpace's Earth is R = 400 with stars at 2,600)
 const PLACE = {
@@ -53,6 +54,8 @@ export async function build(studio, story) {
   sets.space = buildSpace(studio, {});
   const FOG = { street: streetFog, paris: parisFog };
   for (const [name, set] of Object.entries(sets)) set.root.position.set(...PLACE[name].off);
+  // the street camera lives on the far sidewalk (z 7–10): its trees stood right in front of the lens
+  for (const tr of sets.street.trees || []) { tr.t.updateMatrixWorld(true); if (tr.t.getWorldPosition(new THREE.Vector3()).z - PLACE.street.off[2] > 6) tr.t.visible = false; }
   if (sets.livingroom.setMode) sets.livingroom.setMode('evening');
   const W = (place, local) => new THREE.Vector3(local[0] + PLACE[place].off[0], local[1] + PLACE[place].off[1], local[2] + PLACE[place].off[2]);
   const anchorW = (place, name) => W(place, ANCHORS[place][name]);
@@ -176,10 +179,45 @@ export async function build(studio, story) {
   const camOf = (r) => r.cam || DEFAULT_CAM[r.gag];
   const titleRung = rungs.length ? { ...rungs[0], t0: 0, t1: rungs[0].t0 } : null;
 
+  // ---------------------------------------------------------------- lineup (t >= 200: --stills 200,…,205 shows every prop on the street)
+  // each frame: items [name, x, z, scale, rotY] (street-local) + a camera [p, a, fov]; at most 5 props per frame
+  const LINEUP = [
+    { items: [['boat', -0.9, 2.2, 1, 0.5], ['table', 1.1, 4.4, 1, 0]], cam: [[1.2, 2.4, 9.6], [0, 0.5, 3.2], 42] },
+    { items: [['five_aces', -0.17, 6.4, 1, 0], ['gold_chips', 0.03, 6.5, 1, 0], ['chips', 0.2, 6.4, 1, 0]], cam: [[0, 0.5, 7.5], [0, 0.15, 6.4], 40] },
+    { items: [['chicken', -0.7, 5.0, 1, 0.3], ['grandma', 0.15, 4.8, 1, 0], ['sheep', 0.75, 5.4, 1, -0.6], ['wheat_card', 0.15, 6.1, 1, 0]], cam: [[0, 1.3, 9.4], [0, 0.85, 4.8], 44] },
+    { items: [['casino_building', 0, -1.2, 1, 0], ['car', 1.6, 4.4, 1, 0.4]], cam: [[0, 5.0, 9.6], [0, 5.6, -1], 60] },
+    { items: [['house', -3.4, -1.0, 0.7, 0.3], ['eiffel', 2.0, -0.5, 0.1, 0], ['moon', 0.0, 2.6, 0.8, 0]], cam: [[0, 2.6, 9.6], [0, 2.4, 0], 58] },
+    { flood: 1500, cam: [[0, 4.5, 9.6], [0, 0, 2], 55] },
+  ];
+  let lineup = null;
+  function showLineup(t) {
+    if (!lineup) {
+      lineup = { root: new THREE.Group(), props: {} }; scene.add(lineup.root);
+      for (const f of LINEUP) for (const [name] of f.items || []) if (!lineup.props[name]) { lineup.props[name] = makeProp(name); lineup.root.add(lineup.props[name].g); }
+      lineup.flood = makeSheepFlood(lineup.root, 1500);
+    }
+    const f = LINEUP[Math.min(LINEUP.length - 1, Math.floor(t) - 200)];
+    document.getElementById('ui').style.display = 'none';
+    usePlace('street'); you.root.visible = false; ai.rig.root.visible = false; poseExtras('none', t);
+    for (const b of bubbles) if (b) b.bub.setPop(0);
+    for (const pr of Object.values(lineup.props)) pr.g.visible = false;
+    for (const [name, x, z, sc, rot] of f.items || []) {
+      const pr = lineup.props[name]; pr.g.visible = true; pr.g.position.copy(W('street', [x, 0, z])); pr.g.scale.setScalar(sc); pr.g.rotation.y = rot;
+      if (pr.setLegs) pr.setLegs(1, 0.3);
+      if (pr.update) pr.update(t);
+    }
+    lineup.flood.begin();
+    if (f.flood) { const Rf = rng(5); for (let k = 0; k < f.flood; k++) { const a = Rf() * 6.283, rr = 5 * Math.sqrt(Rf()); lineup.flood.add(...W('street', [Math.cos(a) * rr, 0, 3 + Math.sin(a) * rr * 0.7]).toArray(), Rf() * 6.283, 0.9 + Rf() * 0.2); } }
+    lineup.flood.end();
+    setCamera(W('street', f.cam[0]).toArray(), W('street', f.cam[1]).toArray(), f.cam[2], 0, 0);
+  }
+
   // ---------------------------------------------------------------- update
   const rungAt = (t) => { for (let i = rungs.length - 1; i >= 0; i--) if (t >= rungs[i].t0) return i; return -1; };
   let shot = null;
   function update(t) {
+    if (t >= 200) return showLineup(t);
+    if (lineup) { lineup.root.visible = false; document.getElementById('ui').style.display = ''; }
     const i = rungAt(t), r = i >= 0 ? rungs[i] : titleRung;
     usePlace(r.place);
     if (sets[r.place].update) sets[r.place].update(t);

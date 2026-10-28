@@ -143,5 +143,19 @@ class Cues(unittest.TestCase):
         self.assertEqual(clucks, [round(r5["at"]["puff"] + 0.4, 3)])
 
 
+class CrossFile(unittest.TestCase):
+    """The JS template and the Python validator must agree on every prop and anchor name (Review Focus 5)."""
+
+    def test_js_names_match_python(self):
+        import re
+        props_js = open(os.path.join(ROOT, "formats", "ladder", "props.js")).read()
+        names = re.findall(r"'([a-z_]+)'", re.search(r"PROP_NAMES\s*=\s*\[(.*?)\]", props_js, re.S).group(1))
+        self.assertEqual(sorted(names), sorted(p for p in ladder.PROPS if p not in ladder.CAST))
+        shots_js = open(os.path.join(ROOT, "formats", "ladder", "shots.js")).read()
+        block = re.search(r"export const ANCHORS = \{(.*?)\n\};", shots_js, re.S).group(1)
+        js = {m.group(1): re.findall(r"(\w+):\s*\[", m.group(2)) for m in re.finditer(r"(\w+):\s*\{(.*?)\}", block)}
+        self.assertEqual({k: sorted(v) for k, v in js.items()}, {k: sorted(v) for k, v in ladder.PLACES.items()})
+
+
 if __name__ == "__main__":
     unittest.main()
