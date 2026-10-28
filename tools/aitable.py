@@ -115,6 +115,19 @@ def is_count(x, hi):
     return isinstance(x, int) and not isinstance(x, bool) and 1 <= x <= hi
 
 
+def caption_errors(c):
+    """The house caption rules (tools/caption.py) as messages; shared with tools/ladder.py."""
+    if not isinstance(c, dict): return ["missing 'caption'"]
+    errs = []
+    if not c.get("hook") or not c.get("summary"): errs.append("caption: needs a hook and a summary")
+    if "👇" not in str(c.get("cta", "")): errs.append("caption: the cta needs a question with 👇")
+    if not str(c.get("send", "")).startswith("Send this to"): errs.append("caption: send must start with 'Send this to'")
+    tags = c.get("tags", [])
+    if not isinstance(tags, list) or len(tags) != 5 or "#animation" not in tags or not all(str(x).startswith("#") for x in tags):
+        errs.append("caption: exactly 5 hashtags incl. #animation")
+    return errs
+
+
 def validate(ep):
     """Every problem with an episode, as messages (the writer fixes them and retries). Shapes first, then the orders and roles the
     template is built for: anything that would crash or silently misrender the template is rejected here."""
@@ -138,15 +151,7 @@ def validate(ep):
         if "stack" in c and not is_count(c["stack"], 300): errs.append(f"cast '{cid}': stack must be 1–300 chips")
     if not ep.get("title"): errs.append("missing 'title'")
     if not isinstance(ep.get("end"), dict) or not ep["end"].get("html"): errs.append("end: needs {\"html\": …, \"small\": …}")
-    c = ep.get("caption")
-    if not isinstance(c, dict): errs.append("missing 'caption'")
-    else:
-        if not c.get("hook") or not c.get("summary"): errs.append("caption: needs a hook and a summary")
-        if "👇" not in str(c.get("cta", "")): errs.append("caption: the cta needs a question with 👇")
-        if not str(c.get("send", "")).startswith("Send this to"): errs.append("caption: send must start with 'Send this to'")
-        tags = c.get("tags", [])
-        if not isinstance(tags, list) or len(tags) != 5 or "#animation" not in tags or not all(str(x).startswith("#") for x in tags):
-            errs.append("caption: exactly 5 hashtags incl. #animation")
+    errs += caption_errors(ep.get("caption"))
     beats = ep.get("beats")
     if not isinstance(beats, list) or not beats or not all(isinstance(b, dict) for b in beats):
         return errs + ["beats: must be a non-empty list of beat objects"]
