@@ -85,7 +85,8 @@ def layout(ep):
         if r.get("sub"): cands.append(0.3 + read(r["sub"]) + 0.6)
         L = r.get("len", max(cands))
         t0, t1 = round(t, 3), round(t + L, 3)
-        o = dict(r, t0=t0, t1=t1, at={k: round(t0 + v, 3) for k, v in offsets(r).items()},
+        # episode.json's `at` is the ANCHOR; in story.json it moves to `anchor` and `at` holds the key-moment times
+        o = dict(r, t0=t0, t1=t1, anchor=r.get("at"), at={k: round(t0 + v, 3) for k, v in offsets(r).items()},
                  sub_at=round(t0 + 0.3, 3), sub_end=round(t1 - 0.15, 3))
         if text:
             o["say_who"], o["say_text"] = who, plain(text)

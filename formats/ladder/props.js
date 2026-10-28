@@ -69,6 +69,12 @@ export function makeSheepFlood(parent, n = 1500) {
       if (i >= n) return;
       d.position.set(x, y, z); d.rotation.set(0, rotY, 0); d.scale.setScalar(s); d.updateMatrix(); m.setMatrixAt(i++, d.matrix);
     },
+    /** any orientation (sheep standing on a planet) */
+    addQ(x, y, z, quat, s = 1) {
+      if (i >= n) return;
+      d.position.set(x, y, z); d.quaternion.copy(quat); d.scale.setScalar(s); d.updateMatrix(); m.setMatrixAt(i++, d.matrix);
+      d.quaternion.identity();
+    },
     end() { m.count = i; m.instanceMatrix.needsUpdate = true; },
   };
 }
@@ -78,11 +84,11 @@ export function makeProp(name) {
   switch (name) {
     case 'five_aces': {   // a standing fan of five aces (one too many), 2.5x so it reads in a medium shot
       ['As', 'Ah', 'Ad', 'Ac', 'As'].forEach((code, i) => {
-        const c = makeCard(); c.setFace(code); c.g.scale.setScalar(2.5);
+        const c = makeCard(); c.setFace(code); c.g.scale.setScalar(4);
         const pivot = new THREE.Group(); pivot.rotation.z = (i - 2) * 0.22; g.add(pivot);
-        c.g.rotation.set(-Math.PI / 2, 0, 0, 'YXZ'); c.g.position.set(0, 0.11, 0.002 * i); pivot.add(c.g);   // standing, face toward +z
+        c.g.rotation.set(-Math.PI / 2, 0, 0, 'YXZ'); c.g.position.set(0, 0.18, 0.003 * i); pivot.add(c.g);   // standing, face toward +z
       });
-      return { g, h: 0.25 };
+      return { g, h: 0.4 };
     }
     case 'gold_chips': g.add(chipStack(12, 0xf0c040, 0.85)); return { g, h: 12 * CHIP_H };
     case 'chips': g.add(chipStack(10, 0xc8322f)); return { g, h: 10 * CHIP_H };
@@ -128,10 +134,12 @@ export function makeProp(name) {
       for (const x of [-2.4, 2.4]) for (const y of [3.2, 4.8]) mk(new THREE.PlaneGeometry(1.1, 1.0), new THREE.MeshBasicMaterial({ color: 0xffe2a0 }), body, x, y, 2.02);
       const legs = [-1, 1].map((s) => {
         const hip = new THREE.Group(); hip.position.set(s * 1.8, 0, 0); g.add(hip);
-        const thigh = mk(new THREE.CylinderGeometry(0.32, 0.28, 1.5, 12), mat(0x23242c, 0.7), hip, 0, -0.75, 0);
+        // thick cream legs + big black shoes: dark legs vanished against the storefronts
+        const thigh = mk(new THREE.CylinderGeometry(0.55, 0.48, 1.5, 14), mat(0xefe4cf, 0.7), hip, 0, -0.75, 0);
         const knee = new THREE.Group(); knee.position.y = -1.5; hip.add(knee);
-        mk(new THREE.CylinderGeometry(0.28, 0.24, 1.5, 12), mat(0x23242c, 0.7), knee, 0, -0.75, 0);
-        mk(new RoundedBoxGeometry(0.9, 0.4, 1.4, 2, 0.15), mat(0xf4efe6, 0.5), knee, 0, -1.6, 0.25);
+        mk(new THREE.SphereGeometry(0.5, 14, 10), mat(0xefe4cf, 0.7), knee, 0, 0, 0);
+        mk(new THREE.CylinderGeometry(0.48, 0.42, 1.5, 14), mat(0xefe4cf, 0.7), knee, 0, -0.75, 0);
+        mk(new RoundedBoxGeometry(1.2, 0.5, 1.9, 2, 0.2), mat(0x1b1310, 0.4), knee, 0, -1.6, 0.35);
         return { hip, knee, thigh };
       });
       function setLegs(ext = 1, phase = 0) {

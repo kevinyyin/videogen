@@ -19,9 +19,9 @@ GG004 = {
     "rungs": [
         {"place": "casino", "gag": "poof", "prop": "five_aces", "at": "table", "say": "I have five aces.", "hud": 1},
         {"place": "casino", "gag": "transform", "prop": "chips", "to": "gold_chips", "at": "table", "scale": 12,
-         "say": "My chips are gold.", "hud": 2},
+         "say": "My chips are gold.", "hud": 2, "cam": "wide"},
         {"place": "casino", "gag": "transform", "prop": "table", "to": "boat", "at": "table", "riders": True,
-         "say": "This table is a boat.", "hud": 3},
+         "say": "This table is a boat.", "hud": 3, "cam": "wide"},
         {"place": "street", "gag": "sail", "prop": "boat", "at": "road", "riders": True, "say": "Full speed ahead.",
          "hud": 4, "react": True},
         {"place": "street", "gag": "transform", "prop": "you", "to": "chicken", "say": "You're a chicken.", "hud": 5},
@@ -109,6 +109,13 @@ class Layout(unittest.TestCase):
             self.assertGreaterEqual(round(r["t1"] - r["t0"], 3), round(ladder.gag_min(r), 3))
         self.assertAlmostEqual(tl["duration"], tl["end_in"] + 4.5, places=3)
         self.assertTrue(30 <= tl["duration"] <= 40)
+
+    def test_layout_keeps_the_anchor_name(self):
+        """`at` in episode.json is the anchor; layout's key moments must not overwrite it (the template needs both)."""
+        tl = ladder.layout(ep())
+        self.assertEqual(tl["rungs"][0]["anchor"], "table")
+        self.assertEqual(tl["rungs"][6]["anchor"], "curb")
+        self.assertIsNone(tl["rungs"][4].get("anchor"))   # transform you → chicken has no anchor
 
     def test_story_plain_text_and_hud(self):
         e = ep(); e["rungs"][0]["say"] = "I have <em>five</em> aces."
