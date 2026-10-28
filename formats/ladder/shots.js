@@ -272,6 +272,18 @@ export async function build(studio, story) {
     setCamera(W('street', f.cam[0]).toArray(), W('street', f.cam[1]).toArray(), f.cam[2], 0, 0);
   }
 
+  // the AI's body language (the 1 fps scan showed held seconds): it points while it lies, hop-laughs once the lie comes true
+  function aiBody(r, t, landed, i) {
+    if (i < 0) return {};
+    const seated = world.castState('ai', r.place, t).seat, w = Math.sin(t * 12);
+    if (landed && r.gag !== 'say') {
+      const arms = { armA: { sx: -0.3, sz: 0.6 + 0.4 * w, el: -1.1, free: 0 }, armB: { sx: -0.3, sz: 0.6 - 0.4 * w, el: -1.1, free: 0 } };
+      return seated ? arms : { ...arms, lean: 0.03 + 0.07 * w, y: 0.05 * Math.abs(Math.sin(t * 6)) };
+    }
+    const k = clamp((t - r.t0) / 0.3) * (1 - clamp((t - (r.say_end || r.t1) + 0.3) / 0.3));
+    return k > 0 ? { armB: { sx: -1.1 * k, sz: 0.25, el: (-0.5 + 0.15 * Math.sin(t * 5)) * k, free: 0 } } : {};
+  }
+
   // ---------------------------------------------------------------- update
   const rungAt = (t) => { for (let i = rungs.length - 1; i >= 0; i--) if (t >= rungs[i].t0) return i; return -1; };
   let shot = null;
@@ -284,8 +296,9 @@ export async function build(studio, story) {
     if (sets[r.place].update) sets[r.place].update(t);
     if (r.place === 'podium' && sets.podium.setFlashes) sets.podium.setFlashes(t, i >= 0 && rungs[i].place === 'podium' ? 2.5 : 0);
     world.draw(t, r.place);
-    for (const id of ['you', 'ai']) poseCast(id, r.place, t);
     const landed = i >= 0 && Object.values(r.at).some((m) => t >= m + 0.2);   // smug while lying, laughing once it came true
+    poseCast('you', r.place, t);
+    poseCast('ai', r.place, t, aiBody(r, t, landed, i));
     cast.ai.setFace(r.gag !== 'say' && landed ? 'laugh' : 'smug');
     const reacts = world.reactFor(r.place, t), X = reacts[reacts.length - 1], off = PLACE[r.place].off;
     poseExtras(r.place, t, X ? (x, p) => {   // scream (arms up, mouth open) and run away from the gag

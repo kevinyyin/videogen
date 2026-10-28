@@ -133,6 +133,7 @@ export function makeWorld(ctx) {
     let p = I.pos ? I.pos.clone() : new THREE.Vector3();
     if (I.follow) p = ctx.castSpot(I.follow, place, t);
     if (mv) { const u = easeIO((t - mv.go[0]) / (mv.go[1] - mv.go[0])); p = mv.path[0].clone().lerp(mv.path[1], u); p.y += 0.08 * Math.sin(t * 3.1); g.rotation.z = 0.05 * Math.sin(t * 2.3); g.rotation.y = -Math.PI / 2; }
+    else if (I.name === 'boat') g.rotation.z = 0.035 * Math.sin(t * 1.7);
     if (I.onTable && t >= builtin.table.gone) p.y = builtin.table.after ?? 0;
     if (I.pile) p.y += pileOffset(I, t);
     if (I.fall) { const u = clamp((t - I.fall[0]) / (I.fall[1] - I.fall[0])); p.y += DROP_H * (1 - u * u); }

@@ -31,7 +31,8 @@
    "at": "table",
    "scale": 12,
    "say": "My chips are gold.",
-   "hud": 2
+   "hud": 2,
+   "cam": "wide"
   },
   {
    "place": "casino",
@@ -41,7 +42,8 @@
    "at": "table",
    "riders": true,
    "say": "This table is a boat.",
-   "hud": 3
+   "hud": 3,
+   "cam": "wide"
   },
   {
    "place": "street",
