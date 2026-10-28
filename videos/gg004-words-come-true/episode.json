@@ -1,0 +1,115 @@
+{
+ "title": "What if everything an AI said <em>came true</em>?",
+ "seed": 4,
+ "cast": {
+  "you": {
+   "top": "#3aa7d9"
+  },
+  "ai": {
+   "name": "VESPER",
+   "color": "#7b5cff"
+  }
+ },
+ "hud": {
+  "label": "LIES THAT CAME TRUE",
+  "prefix": ""
+ },
+ "rungs": [
+  {
+   "place": "casino",
+   "gag": "poof",
+   "prop": "five_aces",
+   "at": "table",
+   "say": "I have five aces.",
+   "hud": 1
+  },
+  {
+   "place": "casino",
+   "gag": "transform",
+   "prop": "chips",
+   "to": "gold_chips",
+   "at": "table",
+   "scale": 12,
+   "say": "My chips are gold.",
+   "hud": 2
+  },
+  {
+   "place": "casino",
+   "gag": "transform",
+   "prop": "table",
+   "to": "boat",
+   "at": "table",
+   "riders": true,
+   "say": "This table is a boat.",
+   "hud": 3
+  },
+  {
+   "place": "street",
+   "gag": "sail",
+   "prop": "boat",
+   "at": "road",
+   "riders": true,
+   "say": "Full speed ahead.",
+   "hud": 4,
+   "react": true
+  },
+  {
+   "place": "street",
+   "gag": "transform",
+   "prop": "you",
+   "to": "chicken",
+   "say": "You're a chicken.",
+   "hud": 5
+  },
+  {
+   "place": "street",
+   "gag": "rain",
+   "prop": "chips",
+   "count": 400,
+   "at": "road",
+   "say": "It's raining chips.",
+   "hud": 6,
+   "react": true
+  },
+  {
+   "place": "street",
+   "gag": "walkoff",
+   "prop": "casino_building",
+   "at": "curb",
+   "say": "The house always wins.",
+   "hud": 7,
+   "react": true
+  },
+  {
+   "place": "podium",
+   "gag": "say",
+   "say": "I'm the President.",
+   "hud": 8
+  },
+  {
+   "place": "podium",
+   "gag": "drop",
+   "prop": "moon",
+   "at": "ai",
+   "say": "Nothing can stop me.",
+   "hud": 9
+  }
+ ],
+ "end": {
+  "html": "What would you make an AI <em>say</em>?",
+  "small": "PLAY THEM FREE · GGHUMAN.AI"
+ },
+ "caption": {
+  "hook": "I let an AI say whatever it wanted 🤖✨",
+  "summary": "Every lie it told came true. Five aces, a boat, a chicken, a walking casino. Play them free at gghuman.ai.",
+  "cta": "What would you make an AI say? 👇",
+  "send": "Send this to your most chaotic friend",
+  "tags": [
+   "#animation",
+   "#ai",
+   "#whatif",
+   "#gghuman",
+   "#funny"
+  ]
+ }
+}

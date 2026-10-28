@@ -118,5 +118,30 @@ class Layout(unittest.TestCase):
         self.assertEqual((s["hudLabel"], s["end"]["in"]), ("LIES THAT CAME TRUE", tl["end_in"]))
 
 
+class Cues(unittest.TestCase):
+    def setUp(self):
+        self.tl = ladder.layout(ep()); self.c = ladder.cues(ep(), self.tl)
+
+    def test_cues_boom_on_every_impact(self):
+        want = sorted(r["at"]["impact"] for r in self.tl["rungs"] if r["gag"] == "drop") + \
+               sorted(r["at"]["lift"] for r in self.tl["rungs"] if r["gag"] == "launch")
+        self.assertEqual(sorted(x["t"] for x in self.c["events"] if x["sound"] == "distant_boom"), sorted(want))
+
+    def test_music_enters_at_title_out(self):
+        self.assertEqual(self.c["music"]["sections"][0]["t0"], 2.0)
+        self.assertEqual(self.c["duration"], self.tl["duration"])
+
+    def test_ambience_follows_places(self):
+        starts = sorted({a["t0"] for a in self.c["ambience"] if a["sound"] != "crowd_cheer"})
+        street = next(r["t0"] for r in self.tl["rungs"] if r["place"] == "street")
+        podium = next(r["t0"] for r in self.tl["rungs"] if r["place"] == "podium")
+        self.assertEqual(starts, [0.0, street, podium])
+
+    def test_chicken_cluck_after_transform_to_chicken(self):
+        r5 = self.tl["rungs"][4]
+        clucks = [x["t"] for x in self.c["events"] if x["sound"] == "chicken_cluck"]
+        self.assertEqual(clucks, [round(r5["at"]["puff"] + 0.4, 3)])
+
+
 if __name__ == "__main__":
     unittest.main()

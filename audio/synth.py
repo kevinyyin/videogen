@@ -1205,6 +1205,50 @@ def sfx_robot_bleep(rng, pitch=1.0, n=2, dur=0.09):
     return Sound(norm(lp(x, 3000)), onsets=[(0.0, "transient")])
 
 
+def sfx_poof(rng, size=1.0):
+    """A cartoon poof (ladder `poof`/`transform`): a 0.35 s band-passed noise puff (300–1500 Hz, lower for a bigger `size`)
+    with a soft 20 ms attack and an exponential tail, low-passed at 3 kHz — a soft "fff", never a hiss."""
+    dur = 0.35 * (0.8 + 0.2 * size)
+    n = nsamp(dur)
+    t = tvec(n)
+    env = np.minimum(1.0, t / 0.02) * np.exp(-t / (0.09 * size))
+    x = bp(white(n, rng), 300 / np.sqrt(size), 1500 / np.sqrt(size)) * env
+    # anchored at the puff's peak (~30 ms in): the soft attack made the onset QA read it 30–45 ms late
+    return Sound(norm(fades(lp(x, 3000), 0.002, 0.03)), anchor=0.03, onsets=[(0.0, "transient")])
+
+
+def sfx_chicken_cluck(rng, n=3):
+    """A cartoon chicken (ladder: you -> chicken): n short clucks, each a 70 ms 450–700 Hz voiced blip with a noisy edge,
+    90 ms apart, low-passed at 3 kHz."""
+    N = nsamp(n * 0.16 + 0.05)
+    x = np.zeros(N)
+    for i in range(int(n)):
+        m = nsamp(0.07)
+        tt = tvec(m)
+        f0 = rng.uniform(450, 700)
+        fr = np.linspace(f0 * 1.15, f0 * 0.85, m)
+        ph = 2 * np.pi * np.cumsum(fr) / SR
+        env = np.clip(np.minimum(tt / 0.006, (0.07 - tt) / 0.03), 0, 1)
+        blip = (np.sin(ph) + 0.45 * np.sin(2 * ph) + 0.2 * np.sin(3 * ph)) * env + 0.15 * bp(white(m, rng), 900, 2400) * env
+        k0 = nsamp(i * 0.16 + rng.uniform(0, 0.02))
+        x[k0:k0 + m] += blip[:N - k0]
+    return Sound(norm(lp(x, 3000)), onsets=[(0.0, "transient")])
+
+
+def sfx_sheep_baa(rng, pitch=1.0):
+    """A soft cartoon sheep (ladder `flood`): a 0.6 s "baa" — a 300 Hz x pitch tone with a 6 Hz vibrato, six falling
+    harmonics, a nasal band boost, 50 ms attack and 150 ms release, low-passed at 3 kHz."""
+    dur = 0.6
+    n = nsamp(dur)
+    t = tvec(n)
+    f = 300 * pitch * (1 + 0.03 * np.sin(2 * np.pi * 6 * t)) * np.linspace(1.04, 0.96, n)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    tone = sum(np.sin(k * ph) / k for k in range(1, 7))
+    tone = tone + 0.6 * bp(tone, 900, 2400)
+    env = np.clip(np.minimum(t / 0.05, (dur - t) / 0.15), 0, 1)
+    return Sound(norm(lp(tone * env, 3000)), onsets=[(0.0, "transient")])
+
+
 def amb_room_tone(dur, rng):
     n = nsamp(dur)
     out = []
@@ -2153,6 +2197,9 @@ SFX = {
     "distant_boom": (sfx_distant_boom, "prop"),
     "chip_clack": (sfx_chip_clack, "prop"),
     "robot_bleep": (sfx_robot_bleep, "prop"),
+    "poof": (sfx_poof, "prop"),
+    "chicken_cluck": (sfx_chicken_cluck, "prop"),
+    "sheep_baa": (sfx_sheep_baa, "prop"),
     "phone_buzz": (sfx_phone_buzz, "prop"),
 }
 

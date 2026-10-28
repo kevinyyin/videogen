@@ -1,0 +1,385 @@
+{
+ "tone": "funny",
+ "look": {
+  "exposure": 1.05
+ },
+ "fps": 30,
+ "duration": 36.3,
+ "title": {
+  "html": "What if everything an AI said <em>came true</em>?",
+  "in": -0.4,
+  "out": 2.0
+ },
+ "shots": [
+  {
+   "cam": "title",
+   "t0": 0.0,
+   "t1": 2.6
+  },
+  {
+   "cam": "casino",
+   "t0": 2.6,
+   "t1": 5.6
+  },
+  {
+   "cam": "casino",
+   "t0": 5.6,
+   "t1": 9.0
+  },
+  {
+   "cam": "casino",
+   "t0": 9.0,
+   "t1": 12.2
+  },
+  {
+   "cam": "street",
+   "t0": 12.2,
+   "t1": 15.6
+  },
+  {
+   "cam": "street",
+   "t0": 15.6,
+   "t1": 18.8
+  },
+  {
+   "cam": "street",
+   "t0": 18.8,
+   "t1": 22.2
+  },
+  {
+   "cam": "street",
+   "t0": 22.2,
+   "t1": 25.8
+  },
+  {
+   "cam": "podium",
+   "t0": 25.8,
+   "t1": 28.4
+  },
+  {
+   "cam": "podium",
+   "t0": 28.4,
+   "t1": 31.8
+  }
+ ],
+ "subs": [],
+ "hudLabel": "LIES THAT CAME TRUE",
+ "hudPrefix": "",
+ "hud": [
+  {
+   "t0": 0.0,
+   "t1": 2.6,
+   "from": 0,
+   "to": 0,
+   "time": "",
+   "age": ""
+  },
+  {
+   "t0": 2.6,
+   "t1": 5.6,
+   "from": 0,
+   "to": 1,
+   "time": "",
+   "age": "",
+   "r0": 3.5,
+   "r1": 4.1
+  },
+  {
+   "t0": 5.6,
+   "t1": 9.0,
+   "from": 1,
+   "to": 2,
+   "time": "",
+   "age": "",
+   "r0": 6.6,
+   "r1": 7.2
+  },
+  {
+   "t0": 9.0,
+   "t1": 12.2,
+   "from": 2,
+   "to": 3,
+   "time": "",
+   "age": "",
+   "r0": 10.0,
+   "r1": 10.6
+  },
+  {
+   "t0": 12.2,
+   "t1": 15.6,
+   "from": 3,
+   "to": 4,
+   "time": "",
+   "age": "",
+   "r0": 12.8,
+   "r1": 13.4
+  },
+  {
+   "t0": 15.6,
+   "t1": 18.8,
+   "from": 4,
+   "to": 5,
+   "time": "",
+   "age": "",
+   "r0": 16.6,
+   "r1": 17.2
+  },
+  {
+   "t0": 18.8,
+   "t1": 22.2,
+   "from": 5,
+   "to": 6,
+   "time": "",
+   "age": "",
+   "r0": 19.4,
+   "r1": 20.0
+  },
+  {
+   "t0": 22.2,
+   "t1": 25.8,
+   "from": 6,
+   "to": 7,
+   "time": "",
+   "age": "",
+   "r0": 23.0,
+   "r1": 23.6
+  },
+  {
+   "t0": 25.8,
+   "t1": 28.4,
+   "from": 7,
+   "to": 8,
+   "time": "",
+   "age": "",
+   "r0": 26.1,
+   "r1": 26.7
+  },
+  {
+   "t0": 28.4,
+   "t1": 36.3,
+   "from": 8,
+   "to": 9,
+   "time": "",
+   "age": "",
+   "r0": 29.0,
+   "r1": 29.6
+  }
+ ],
+ "end": {
+  "in": 31.8,
+  "html": "What would you make an AI <em>say</em>?",
+  "small": "PLAY THEM FREE · GGHUMAN.AI"
+ },
+ "dips": [
+  [
+   0.0,
+   0.0,
+   0.45
+  ]
+ ],
+ "finalFade": [
+  31.8,
+  32.6
+ ],
+ "debugView": {
+  "center": [
+   0,
+   0,
+   0
+  ],
+  "height": 14
+ },
+ "episode": {
+  "seed": 4,
+  "cast": {
+   "you": {
+    "top": "#3aa7d9"
+   },
+   "ai": {
+    "name": "VESPER",
+    "color": "#7b5cff"
+   }
+  },
+  "hud": {
+   "label": "LIES THAT CAME TRUE",
+   "prefix": ""
+  },
+  "rungs": [
+   {
+    "place": "casino",
+    "gag": "poof",
+    "prop": "five_aces",
+    "at": {
+     "pop": 3.5
+    },
+    "say": "I have five aces.",
+    "hud": 1,
+    "t0": 2.6,
+    "t1": 5.6,
+    "sub_at": 2.9,
+    "sub_end": 5.45,
+    "say_who": "ai",
+    "say_text": "I have five aces.",
+    "say_at": 2.75,
+    "say_end": 4.79
+   },
+   {
+    "place": "casino",
+    "gag": "transform",
+    "prop": "chips",
+    "to": "gold_chips",
+    "at": {
+     "puff": 6.6,
+     "grow1": 8.0
+    },
+    "scale": 12,
+    "say": "My chips are gold.",
+    "hud": 2,
+    "t0": 5.6,
+    "t1": 9.0,
+    "sub_at": 5.9,
+    "sub_end": 8.85,
+    "say_who": "ai",
+    "say_text": "My chips are gold.",
+    "say_at": 5.75,
+    "say_end": 7.79
+   },
+   {
+    "place": "casino",
+    "gag": "transform",
+    "prop": "table",
+    "to": "boat",
+    "at": {
+     "puff": 10.0
+    },
+    "riders": true,
+    "say": "This table is a boat.",
+    "hud": 3,
+    "t0": 9.0,
+    "t1": 12.2,
+    "sub_at": 9.3,
+    "sub_end": 12.05,
+    "say_who": "ai",
+    "say_text": "This table is a boat.",
+    "say_at": 9.15,
+    "say_end": 11.5
+   },
+   {
+    "place": "street",
+    "gag": "sail",
+    "prop": "boat",
+    "at": {
+     "go0": 12.8,
+     "go1": 15.4
+    },
+    "riders": true,
+    "say": "Full speed ahead.",
+    "hud": 4,
+    "react": true,
+    "t0": 12.2,
+    "t1": 15.6,
+    "sub_at": 12.5,
+    "sub_end": 15.45,
+    "say_who": "ai",
+    "say_text": "Full speed ahead.",
+    "say_at": 12.35,
+    "say_end": 14.35
+   },
+   {
+    "place": "street",
+    "gag": "transform",
+    "prop": "you",
+    "to": "chicken",
+    "say": "You're a chicken.",
+    "hud": 5,
+    "t0": 15.6,
+    "t1": 18.8,
+    "at": {
+     "puff": 16.6
+    },
+    "sub_at": 15.9,
+    "sub_end": 18.65,
+    "say_who": "ai",
+    "say_text": "You're a chicken.",
+    "say_at": 15.75,
+    "say_end": 17.75
+   },
+   {
+    "place": "street",
+    "gag": "rain",
+    "prop": "chips",
+    "count": 400,
+    "at": {
+     "fall0": 19.4,
+     "fall1": 21.4
+    },
+    "say": "It's raining chips.",
+    "hud": 6,
+    "react": true,
+    "t0": 18.8,
+    "t1": 22.2,
+    "sub_at": 19.1,
+    "sub_end": 22.05,
+    "say_who": "ai",
+    "say_text": "It's raining chips.",
+    "say_at": 18.95,
+    "say_end": 20.95
+   },
+   {
+    "place": "street",
+    "gag": "walkoff",
+    "prop": "casino_building",
+    "at": {
+     "stand": 23.0,
+     "walk0": 23.4,
+     "walk1": 25.6
+    },
+    "say": "The house always wins.",
+    "hud": 7,
+    "react": true,
+    "t0": 22.2,
+    "t1": 25.8,
+    "sub_at": 22.5,
+    "sub_end": 25.65,
+    "say_who": "ai",
+    "say_text": "The house always wins.",
+    "say_at": 22.35,
+    "say_end": 24.39
+   },
+   {
+    "place": "podium",
+    "gag": "say",
+    "say": "I'm the President.",
+    "hud": 8,
+    "t0": 25.8,
+    "t1": 28.4,
+    "at": {},
+    "sub_at": 26.1,
+    "sub_end": 28.25,
+    "say_who": "ai",
+    "say_text": "I'm the President.",
+    "say_at": 25.95,
+    "say_end": 27.95
+   },
+   {
+    "place": "podium",
+    "gag": "drop",
+    "prop": "moon",
+    "at": {
+     "fall": 29.0,
+     "impact": 29.6
+    },
+    "say": "Nothing can stop me.",
+    "hud": 9,
+    "t0": 28.4,
+    "t1": 31.8,
+    "sub_at": 28.7,
+    "sub_end": 31.65,
+    "say_who": "ai",
+    "say_text": "Nothing can stop me.",
+    "say_at": 28.55,
+    "say_end": 30.59
+   }
+  ]
+ }
+}

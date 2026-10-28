@@ -226,6 +226,94 @@ def story(ep, tl):
     }
 
 
+BEDS = {   # ambience per place (sound, gain dB, args)
+    "casino": [("room_tone", -38, {}), ("city_day", -46, {"murmur": 0.6, "traffic": 0.0})],
+    "livingroom": [("room_tone", -38, {})],
+    "street": [("city_day", -40, {"murmur": 0.5, "traffic": 0.6})],
+    "paris": [("city_day", -42, {"murmur": 0.4, "traffic": 0.2}), ("wind", -46, {})],
+    "podium": [("room_tone", -38, {}), ("city_day", -44, {"murmur": 0.7, "traffic": 0.0})],
+    "space": [("room_tone", -50, {})],
+}
+BAR = 4 * 60 / 90   # the mock-epic march: C minor, 90 bpm (audio/README.md "kaiju march", 010)
+
+
+def cues(ep, tl):
+    """cues.json (audio/synth.py format): a mock-epic score that climbs every rung + foley on the same key moments."""
+    dur, end_in = tl["duration"], tl["end_in"]
+    ev, booms, amb = [], [], []
+    rnd = random.Random(ep.get("seed", 1))
+
+    def e(t, sound, gain, **args):
+        ev.append({"t": round(t, 3), "sound": sound, "gain_db": gain, "pan": 0.0, "room": -16, "args": args})
+
+    for r in tl["rungs"]:
+        a, g = r["at"], r["gag"]
+        if g == "poof": e(a["pop"], "poof", -24)
+        if g == "transform":
+            e(a["puff"], "poof", -24)
+            if r.get("to") == "chicken": e(a["puff"] + 0.4, "chicken_cluck", -26)
+            if "grow1" in a: e(a["puff"] + 0.3, "low_swell", -26, dur=1.2)
+        if g == "drop":
+            e(a["fall"], "low_swell", -28, dur=0.6)
+            e(a["impact"], "distant_boom", -20, size=1.0); e(a["impact"], "giant_step", -22, size=1.6); booms.append(a["impact"])
+        if g == "grow": e(a["grow0"], "low_swell", -26, dur=1.2)
+        if g == "walkoff":
+            t = a["walk0"]
+            while t <= a["walk1"] + 1e-6: e(t, "giant_step", -24, size=1.3); t += 0.45
+        if g == "sail": e(a["go0"], "low_swell", -30, dur=1.4)
+        if g == "rain":
+            t = a["fall0"]
+            while t <= a["fall1"] + 1e-6: e(t, "chip_clack", -28, n=4); t += 0.15
+        if g == "flood":
+            for _ in range(5): e(a["fill0"] + rnd.random() * (a["fill1"] - a["fill0"]), "sheep_baa", -30, pitch=round(0.8 + 0.4 * rnd.random(), 2))
+        if g == "launch":
+            e(a["lift"], "distant_boom", -22, size=1.0); e(a["lift"], "low_swell", -24, dur=1.0); booms.append(a["lift"])
+        if r.get("say_who") == "ai": e(r["say_at"], "robot_bleep", -28, pitch=1.0, n=2)
+        if r.get("react"):
+            t0 = first_moment(r)
+            amb.append({"sound": "crowd_cheer", "t0": t0, "t1": round(min(dur, t0 + 2.0), 3), "fade_in": 0.2, "fade_out": 0.4,
+                        "gain_db": -34, "seed": 9, "args": {"excite": 0.6}})
+    # one bed per run of rungs in the same place (the first run also covers the title)
+    runs = []
+    for r in tl["rungs"]:
+        if not runs or runs[-1][0] != r["place"]: runs.append([r["place"], r["t0"]])
+    runs[0][1] = 0.0
+    for i, (place, t0) in enumerate(runs):
+        t1 = runs[i + 1][1] if i + 1 < len(runs) else dur
+        for k, (sound, gain, args) in enumerate(BEDS[place]):
+            amb.append({"sound": sound, "t0": round(t0, 3), "t1": round(t1, 3), "fade_in": 0.3, "fade_out": 0.06,
+                        "gain_db": gain, "seed": i * 3 + k + 1, **({"args": args} if args else {})})
+    prog, chords, t, i = ["Cm", "Ab", "Fm", "G"], [], TITLE_OUT, 0
+    while t < end_in - 1e-6:
+        chords.append([round(t, 3), prog[i % 4]]); t += BAR; i += 1
+    chords += [[end_in, "Ab"], [round(end_in + 1.4, 3), "G"], [round(end_in + 2.8, 3), "C"]]
+    music = {
+        "instrument": "piano", "gain_db": 0.0, "reverb_db": -10.0, "pad_db": 2.0, "pad_reverb_db": -5.0, "mallet_db": -2.0,
+        "strings_db": 8.0, "drums_db": -7.0,
+        "leveler": {"thr_rel_db": 3.0, "ratio": 2.5, "tau": 0.25}, "end": dur, "chords": chords,
+        "sections": [
+            # the strings carry through the end card on the resolving chords (a quiet piano arp there read as a music dropout)
+            {"t0": TITLE_OUT, "t1": dur, "style": "strings", "vel": [[TITLE_OUT, 0.24], [end_in, 0.34], [dur, 0.24]], "step": round(BAR / 8, 4),
+             "pattern": [0, 0, 0, 1, 0, 0, 2, 0], "octave": 1, "sustain": 0.3, "len": 0.9}],
+        "drum_patterns": [{"t0": TITLE_OUT, "t1": end_in, "step": round(BAR / 4, 4), "pattern": [1.0, 0.7, 0.85, 0.7], "vel": 0.5, "kind": "taiko"}],
+        "drums": [[TITLE_OUT, 0.6, "boom"]] + [[t, 0.55, "boom"] for t in booms],
+        "melody": [], "mallet_melody": [], "stings": [],
+        "pad": [{"t0": TITLE_OUT, "t1": round(TITLE_OUT + 2.0, 3), "notes": [24, 36, 43], "level": 1.5, "attack": 0.15, "release": 0.8, "hp": 30},
+                {"t0": round(TITLE_OUT - 0.3, 3), "t1": dur, "notes": [36, 48, 55], "level": 0.8, "attack": 0.8, "release": 0.8}],
+        "ducks": [], "auto_duck": {"db": -4.0, "categories": ["prop"], "lookahead": 0.04, "hold": 0.4, "smooth": 0.2, "max_len": 1.0},
+        "eq": [{"f": 2800, "q": 0.8, "db": -2.0}, {"f": 6500, "q": 0.6, "db": -4.0}],
+    }
+    return {
+        "title": plain(ep["title"]), "duration": dur, "target_lufs": -15.0, "limiter_ceiling_dbtp": -1.5,
+        "end_fade": [round(dur - 1.0, 3), dur],
+        "stem_gain_db": {"music": -6.0, "sfx": 13.0, "amb": 10.0},
+        "stem_dynamics": {"music": {"limit_dbfs": -3.0, "lim_win": 0.015},
+                          "sfx": {"comp_thr_dbfs": -15.0, "ratio": 2.5, "win": 0.004, "limit_dbfs": -4.0}},
+        "sfx_lowpass_hz": 5000, "shots": [0.0, TITLE_LEN] + [r["t1"] for r in tl["rungs"]] + [dur],
+        "ambience": amb, "events": ev, "music": music,
+    }
+
+
 def build(slug):
     vdir = os.path.join(ROOT, "videos", slug)
     ep = json.load(open(os.path.join(vdir, "episode.json")))
@@ -236,6 +324,14 @@ def build(slug):
         sys.exit(1)
     tl = layout(ep)
     json.dump(story(ep, tl), open(os.path.join(vdir, "story.json"), "w"), indent=1, ensure_ascii=False)
+    json.dump(cues(ep, tl), open(os.path.join(vdir, "cues.json"), "w"), indent=1, ensure_ascii=False)
+    open(os.path.join(vdir, "caption.md"), "w").write(caption_md(ep))
+    stub = os.path.join(vdir, "shots.js")
+    if not os.path.exists(stub): open(stub, "w").write("export * from '/formats/ladder/shots.js';\n")
+    chk = subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "caption.py"), vdir], capture_output=True, text=True)
+    if chk.returncode:
+        print(f"{slug}: caption.md fails tools/caption.py:\n{chk.stdout}{chk.stderr}")
+        sys.exit(1)
     print(f"{slug}: {len(tl['rungs'])} rungs, duration {tl['duration']:.1f} s (end card in at {tl['end_in']:.1f})")
     for r in tl["rungs"]:
         moments = ", ".join(f"{k} {v}" for k, v in r["at"].items())
