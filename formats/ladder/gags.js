@@ -26,7 +26,16 @@ export function makeWorld(ctx) {
   const { scene, rungs, anchorW, W, sets } = ctx;
   const R = rng(ctx.seed * 17 + 3);
   const inst = [];
-  const add = (o) => { const I = { gone: Infinity, born: -1, moves: [], ...o }; if (!I.kind) { I.p = makeProp(I.name); scene.add(I.p.g); I.p.g.visible = false; } inst.push(I); return I; };
+  const INDOOR = { casino: 1, livingroom: 1, podium: 1 }, _bb = new THREE.Box3(), _sz = new THREE.Vector3();
+  const add = (o) => {
+    const I = { gone: Infinity, born: -1, moves: [], ...o };
+    if (!I.kind) {
+      I.p = makeProp(I.name); I.p.g.updateMatrixWorld(true); _bb.setFromObject(I.p.g).getSize(_sz); I.span = Math.max(_sz.x, _sz.z);   // footprint (a car is long, not tall)
+      scene.add(I.p.g); I.p.g.visible = false;
+    }
+    inst.push(I); return I;
+  };
+  const indoorCap = (I) => { if (INDOOR[I.place]) I.capH = Math.min(I.capH || Infinity, 2.8); };   // a 5 m house in a 3.6 m room left the camera nowhere to stand
   const live = (name, place, t) => [...inst].reverse().find((I) => I.name === name && (place == null || placeOf(I, t) === place) && I.born <= t && I.gone > t);
   const placeOf = (I, t) => { let p = I.place; for (const m of I.moves) if (t >= m.t) p = m.place; return p; };
   const castAs = { you: null, ai: null };      // a transformed cast member: {I, from}
@@ -48,6 +57,7 @@ export function makeWorld(ctx) {
     const k = r.at, anchor = r.anchor ? anchorW(r.place, r.anchor) : null, P = r.place;
     if (r.gag === 'poof') {
       const I = add({ name: r.prop, place: P, born: k.pop, pos: anchor.clone(), pop: k.pop, onTable: P === 'casino' && r.anchor === 'table', yaw: ctx.faceYaw[P] });
+      indoorCap(I);
       if (r.anchor === 'pile') stack(P, I);
       puffs.push({ t: k.pop, pos: anchor.clone().add(new THREE.Vector3(0, I.p.h * 0.5, 0)), n: 10, size: clamp(I.p.h * 0.9, 0.25, 1.2) });   // puffs sized to the prop
     }
@@ -63,8 +73,13 @@ export function makeWorld(ctx) {
       puffs.push({ t: k.puff, pos: (from || I.pos || anchorW(P, r.prop)).clone().add(new THREE.Vector3(0, Math.min(ph, 3) * 0.5, 0)), n: 14, size: clamp(ph * 0.6, 0.3, 1.3) });
     }
     if (r.gag === 'drop') {
-      if (r.prop === 'pile') { pileDrops.push({ place: P, from: k.fall, to: k.impact, target: anchor.clone() }); impacts.push({ t: k.impact, pos: anchor.clone(), amp: 0.09 }); return; }
+      if (r.prop === 'pile') {
+        pileDrops.push({ place: P, from: k.fall, to: k.impact, target: anchor.clone() }); impacts.push({ t: k.impact, pos: anchor.clone(), amp: 0.09 });
+        if (CAST.includes(r.anchor)) squash[r.anchor] = k.impact;
+        return;
+      }
       const I = add({ name: r.prop, place: P, born: k.fall, pos: anchor.clone(), fall: [k.fall, k.impact] });
+      indoorCap(I);
       if (r.anchor === 'pile') stack(P, I);
       if (P === 'casino' && r.anchor === 'table') { builtin.table.gone = Math.min(builtin.table.gone, k.impact); builtin.table.after ??= 0; I.pos.y = 0; }   // crushed: it lands on the floor
       if (CAST.includes(r.anchor)) squash[r.anchor] = k.impact;   // lands where the cast member stands (the podium riser too)
@@ -99,7 +114,8 @@ export function makeWorld(ctx) {
       if (!o.isMesh) return;
       if (o.isInstancedMesh) { o.computeBoundingBox(); box.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } else { o.geometry.computeBoundingBox(); box.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); }
       box.getCenter(c); box.getSize(sz); root.worldToLocal(c);
-      if (Math.hypot(c.x, c.z) < 15 && sz.y > 5) o.visible = false;   // the set's own tower: the eiffel prop stands in for it
+      // the set's own tower (the eiffel prop stands in for it) — tower-sized only: the 600 m sky dome is centered on the axis too
+      if (Math.hypot(c.x, c.z) < 16 && (c.y > 1.5 || sz.y > 1.5) && sz.y < 120 && Math.max(sz.x, sz.z) < 60) o.visible = false;   // incl. the wide, short platforms
     });
   }
 
@@ -231,7 +247,11 @@ export function makeWorld(ctx) {
       const T = ['transform', 'grow', 'walkoff', 'launch', 'sail', 'poof', 'drop'].includes(r.gag) && r.prop !== 'pile'
         ? [...inst].reverse().find((I) => !I.kind && (I.name === (r.gag === 'transform' ? r.to : r.prop)) && I.born <= Math.max(t, Object.values(k)[0] || t) + 0.01 && placeOf(I, t) === place) : null;
       // (a walk-off is watched leaving: the subject point stops at walk0 and the camera holds)
-      if (T && T.p.g.visible) { const s = scaleOf(T, t), h = T.walk ? 11 : T.p.h * s; const p = posOf(T, Math.min(t, T.gone - 0.01, T.walk ? T.walk[1] : Infinity), place); if (T.fall && t < T.fall[1]) p.y = T.pos.y; return { pos: p.add(new THREE.Vector3(0, clamp(h * 0.5, 1.0, 6), 0)), size: Math.max(1.6, Math.min(T.walk ? 12 : h, 14)) }; }   // never below people height
+      if (r.prop === 'pile' || r.anchor === 'pile') {
+        const top = (piles[place] || []).filter((I) => I.born <= t).reduce((s2, I) => s2 + sizeOf(I) * 0.92, 0), base = anchorW(place, r.anchor || 'pile');
+        return { pos: base.add(new THREE.Vector3(0, clamp(top * 0.5, 1, 7), 0)), size: Math.max(2.5, Math.min(top, 14)) };
+      }
+      if (T && T.p.g.visible) { const s = scaleOf(T, t), h = T.walk ? 11 : T.p.h * s; const p = posOf(T, Math.min(t, T.gone - 0.01, T.walk ? T.walk[1] : Infinity), place); if (T.fall && t < T.fall[1]) p.y = T.pos.y; return { pos: p.add(new THREE.Vector3(0, clamp(h * 0.5, 1.0, 6), 0)), size: Math.max(1.6, Math.min(T.walk ? 12 : Math.max(h, T.span * s * 0.7), 14)) }; }
       if (r.prop === 'pile' || r.anchor === 'pile') { const top = (piles[place] || []).filter((I) => I.born <= t).reduce((s2, I) => s2 + sizeOf(I) * 0.92, 0); const base = r.anchor ? anchorW(place, r.anchor) : anchorW(place, 'pile'); return { pos: base.add(new THREE.Vector3(0, Math.min(top * 0.5, 6), 0)), size: Math.max(2.5, Math.min(top, 14)) }; }
       if (r.gag === 'flood' && REGIONS[place][r.anchor] && !REGIONS[place][r.anchor].sphere) { const g = REGIONS[place][r.anchor]; return { pos: W(place, [(g.x0 + g.x1) / 2, g.y + 0.8, (g.z0 + g.z1) / 2]), size: Math.max(g.x1 - g.x0, g.z1 - g.z0) * 0.6 }; }
       const a = r.anchor ? anchorW(place, r.anchor) : anchorW(place, 'you');

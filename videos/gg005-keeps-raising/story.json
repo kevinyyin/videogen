@@ -1,0 +1,395 @@
+{
+ "tone": "funny",
+ "look": {
+  "exposure": 1.05
+ },
+ "fps": 30,
+ "duration": 36.1,
+ "title": {
+  "html": "What if the AI kept <em>raising</em> the bet?",
+  "in": -0.4,
+  "out": 2.0
+ },
+ "shots": [
+  {
+   "cam": "title",
+   "t0": 0.0,
+   "t1": 2.6
+  },
+  {
+   "cam": "casino",
+   "t0": 2.6,
+   "t1": 5.6
+  },
+  {
+   "cam": "casino",
+   "t0": 5.6,
+   "t1": 9.0
+  },
+  {
+   "cam": "casino",
+   "t0": 9.0,
+   "t1": 12.4
+  },
+  {
+   "cam": "street",
+   "t0": 12.4,
+   "t1": 15.8
+  },
+  {
+   "cam": "paris",
+   "t0": 15.8,
+   "t1": 19.2
+  },
+  {
+   "cam": "street",
+   "t0": 19.2,
+   "t1": 22.2
+  },
+  {
+   "cam": "street",
+   "t0": 22.2,
+   "t1": 25.6
+  },
+  {
+   "cam": "space",
+   "t0": 25.6,
+   "t1": 28.2
+  },
+  {
+   "cam": "street",
+   "t0": 28.2,
+   "t1": 31.6
+  }
+ ],
+ "subs": [],
+ "hudLabel": "POT",
+ "hudPrefix": "$",
+ "hud": [
+  {
+   "t0": 0.0,
+   "t1": 2.6,
+   "from": 0,
+   "to": 0,
+   "time": "",
+   "age": ""
+  },
+  {
+   "t0": 2.6,
+   "t1": 5.6,
+   "from": 0,
+   "to": 500,
+   "time": "",
+   "age": "",
+   "r0": 3.5,
+   "r1": 4.1
+  },
+  {
+   "t0": 5.6,
+   "t1": 9.0,
+   "from": 500,
+   "to": 40000,
+   "time": "",
+   "age": "",
+   "r0": 6.2,
+   "r1": 6.8
+  },
+  {
+   "t0": 9.0,
+   "t1": 12.4,
+   "from": 40000,
+   "to": 800000,
+   "time": "",
+   "age": "",
+   "r0": 9.6,
+   "r1": 10.2
+  },
+  {
+   "t0": 12.4,
+   "t1": 15.8,
+   "from": 800000,
+   "to": 2000000000,
+   "time": "",
+   "age": "",
+   "r0": 13.0,
+   "r1": 13.6
+  },
+  {
+   "t0": 15.8,
+   "t1": 19.2,
+   "from": 2000000000,
+   "to": 4000000000,
+   "time": "",
+   "age": "",
+   "r0": 16.6,
+   "r1": 17.2
+  },
+  {
+   "t0": 19.2,
+   "t1": 22.2,
+   "from": 4000000000,
+   "to": 8000000000,
+   "time": "",
+   "age": "",
+   "r0": 20.1,
+   "r1": 20.7
+  },
+  {
+   "t0": 22.2,
+   "t1": 25.6,
+   "from": 8000000000,
+   "to": 1000000000000,
+   "time": "",
+   "age": "",
+   "r0": 22.8,
+   "r1": 23.4
+  },
+  {
+   "t0": 25.6,
+   "t1": 28.2,
+   "from": 1000000000000,
+   "to": 9999999999999,
+   "time": "",
+   "age": "",
+   "r0": 25.9,
+   "r1": 26.5
+  },
+  {
+   "t0": 28.2,
+   "t1": 36.1,
+   "from": 9999999999999,
+   "to": 9999999999999,
+   "time": "",
+   "age": ""
+  }
+ ],
+ "end": {
+  "in": 31.6,
+  "html": "What would you bet against an <em>AI</em>?",
+  "small": "PLAY THEM FREE · GGHUMAN.AI"
+ },
+ "dips": [
+  [
+   0.0,
+   0.0,
+   0.45
+  ]
+ ],
+ "finalFade": [
+  31.6,
+  32.4
+ ],
+ "debugView": {
+  "center": [
+   0,
+   0,
+   0
+  ],
+  "height": 14
+ },
+ "episode": {
+  "seed": 5,
+  "cast": {
+   "you": {
+    "top": "#e8833a"
+   },
+   "ai": {
+    "name": "WREN",
+    "color": "#2fb7a4"
+   }
+  },
+  "hud": {
+   "label": "POT",
+   "prefix": "$"
+  },
+  "rungs": [
+   {
+    "place": "casino",
+    "gag": "poof",
+    "prop": "chips",
+    "at": {
+     "pop": 3.5
+    },
+    "say": "Raise.",
+    "hud": 500,
+    "t0": 2.6,
+    "t1": 5.6,
+    "anchor": "table",
+    "sub_at": 2.9,
+    "sub_end": 5.45,
+    "say_who": "ai",
+    "say_text": "Raise.",
+    "say_at": 2.75,
+    "say_end": 4.75
+   },
+   {
+    "place": "casino",
+    "gag": "drop",
+    "prop": "car",
+    "at": {
+     "fall": 6.2,
+     "impact": 6.8
+    },
+    "say": "My car. Raise.",
+    "hud": 40000,
+    "t0": 5.6,
+    "t1": 9.0,
+    "anchor": "table",
+    "sub_at": 5.9,
+    "sub_end": 8.85,
+    "say_who": "ai",
+    "say_text": "My car. Raise.",
+    "say_at": 5.75,
+    "say_end": 7.75
+   },
+   {
+    "place": "casino",
+    "gag": "drop",
+    "prop": "house",
+    "at": {
+     "fall": 9.6,
+     "impact": 10.2
+    },
+    "say": {
+     "who": "you",
+     "text": "My house."
+    },
+    "hud": 800000,
+    "t0": 9.0,
+    "t1": 12.4,
+    "anchor": "table",
+    "sub_at": 9.3,
+    "sub_end": 12.25,
+    "say_who": "you",
+    "say_text": "My house.",
+    "say_at": 9.15,
+    "say_end": 11.15
+   },
+   {
+    "place": "street",
+    "gag": "drop",
+    "prop": "casino_building",
+    "at": {
+     "fall": 13.0,
+     "impact": 13.6
+    },
+    "say": "The casino. Raise.",
+    "hud": 2000000000,
+    "react": true,
+    "t0": 12.4,
+    "t1": 15.8,
+    "anchor": "pile",
+    "sub_at": 12.7,
+    "sub_end": 15.65,
+    "say_who": "ai",
+    "say_text": "The casino. Raise.",
+    "say_at": 12.55,
+    "say_end": 14.55
+   },
+   {
+    "place": "paris",
+    "gag": "launch",
+    "prop": "eiffel",
+    "at": {
+     "lift": 16.6,
+     "gone": 18.0
+    },
+    "lands": "pile",
+    "say": "The Eiffel Tower.",
+    "hud": 4000000000,
+    "t0": 15.8,
+    "t1": 19.2,
+    "anchor": "tower",
+    "sub_at": 16.1,
+    "sub_end": 19.05,
+    "say_who": "ai",
+    "say_text": "The Eiffel Tower.",
+    "say_at": 15.95,
+    "say_end": 17.95
+   },
+   {
+    "place": "street",
+    "gag": "poof",
+    "prop": "grandma",
+    "at": {
+     "pop": 20.1
+    },
+    "say": {
+     "who": "you",
+     "text": "My grandma."
+    },
+    "hud": 8000000000,
+    "cam": "wide",
+    "t0": 19.2,
+    "t1": 22.2,
+    "anchor": "pile",
+    "sub_at": 19.5,
+    "sub_end": 22.05,
+    "say_who": "you",
+    "say_text": "My grandma.",
+    "say_at": 19.35,
+    "say_end": 21.35
+   },
+   {
+    "place": "street",
+    "gag": "drop",
+    "prop": "moon",
+    "at": {
+     "fall": 22.8,
+     "impact": 23.4
+    },
+    "say": "The Moon. Raise.",
+    "hud": 1000000000000,
+    "react": true,
+    "t0": 22.2,
+    "t1": 25.6,
+    "anchor": "pile",
+    "sub_at": 22.5,
+    "sub_end": 25.45,
+    "say_who": "ai",
+    "say_text": "The Moon. Raise.",
+    "say_at": 22.35,
+    "say_end": 24.35
+   },
+   {
+    "place": "space",
+    "gag": "say",
+    "say": {
+     "who": "you",
+     "text": "I bet Earth."
+    },
+    "hud": 9999999999999,
+    "t0": 25.6,
+    "t1": 28.2,
+    "anchor": null,
+    "at": {},
+    "sub_at": 25.9,
+    "sub_end": 28.05,
+    "say_who": "you",
+    "say_text": "I bet Earth.",
+    "say_at": 25.75,
+    "say_end": 27.75
+   },
+   {
+    "place": "street",
+    "gag": "drop",
+    "prop": "pile",
+    "at": {
+     "fall": 28.8,
+     "impact": 29.4
+    },
+    "say": "I fold.",
+    "hud": 9999999999999,
+    "t0": 28.2,
+    "t1": 31.6,
+    "anchor": "you",
+    "sub_at": 28.5,
+    "sub_end": 31.45,
+    "say_who": "ai",
+    "say_text": "I fold.",
+    "say_at": 28.35,
+    "say_end": 30.35
+   }
+  ]
+ }
+}

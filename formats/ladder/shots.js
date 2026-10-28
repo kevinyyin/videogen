@@ -46,6 +46,7 @@ const FLOOR = { street: SIDEWALK_H };
 const BOUNDS = {
   casino: { x: [-5.6, 5.6], y: [0.3, 3.3], z: [-4.6, 4.2] }, livingroom: { x: [-4.8, 2.8], y: [0.3, 2.55], z: [-2.6, 2.6] },
   podium: { x: [-4.7, 4.7], y: [0.3, 3.2], z: [-3.7, 5.7] }, street: { x: [-40, 40], y: [0.3, 30], z: [-2.4, 9.4] },
+  paris: { x: [-60, 60], y: [1, 90], z: [6, 95] },
 };   // standing height for extras on the street's sidewalk
 
 export async function build(studio, story) {
@@ -68,6 +69,8 @@ export async function build(studio, story) {
     tr.t.updateMatrixWorld(true); const q = tr.t.getWorldPosition(new THREE.Vector3()).sub(new THREE.Vector3(...PLACE.street.off));
     if (q.z > 6 || (Math.abs(q.x - curb[0]) < 5 && q.z < 0.5)) tr.t.visible = false;
   }
+  // the front lane's parked cars (z 5.95) sat between the camera and the action; the back lane's stay (sheep bury them)
+  for (const o of sets.street.root.children) if (o.isGroup && Math.abs(o.position.z - 5.95) < 0.01) o.visible = false;
   // and the front sidewalk's lamp posts (tall + thin, z 7.2–9.8): one stood right in front of the street camera
   { const box = new THREE.Box3(), c = new THREE.Vector3(), sz = new THREE.Vector3(); sets.street.root.updateMatrixWorld(true);
     sets.street.root.traverse((o) => { if (!o.isMesh || o.isInstancedMesh) return; box.setFromObject(o); box.getCenter(c); box.getSize(sz);
@@ -181,7 +184,7 @@ export async function build(studio, story) {
     casino: [[4.4, 3.0, 1.2], [-0.4, 0.9, 0], 40],
     livingroom: [[-0.6, 1.7, 2.4], [-3.4, 0.9, -0.95], 42],
     street: [[0.5, 2.0, 8.6], [0, 1.4, 1.5], 44],   // on the far sidewalk (z 7–10): at z 13 it sat inside the facades
-    paris: [[0, 2.5, 46], [0, 16, 0], 50],
+    paris: [[0, 3.5, 42], [0, 12, 0], 50],
     podium: [[2.2, 2.5, 3.6], [0, 1.4, -2.8], 40],   // high 3/4 from the press rows: straight on, the lectern hid the speaker
     space: [[0, 1.4, 1004.6], [0, 0.6, 1000], 50],
   };
@@ -189,8 +192,16 @@ export async function build(studio, story) {
     wide(r, t) {   // the place's establishing angle, re-aimed at the gag's subject and backed off by its size
       const [p, a, fov] = WIDE[r.place], k = lerp(1, 0.93, smooth(u01(r, t)));
       if (!r.at || r.title) { const P = p.map((v, i) => a[i] + (v - a[i]) * k); return { p: W(r.place, P).toArray(), a: W(r.place, a).toArray(), fov }; }
-      const f = world.focusOf(r, t, r.place), s = Math.max(1, f.size / 2.6) * k;
+      const f = world.focusOf(r, t, r.place), s = Math.min(2.2, Math.max(1, f.size / 2.6)) * k;
       const aim = r.say_who ? f.pos.clone().lerp(speakerHead(r.say_who), 0.3) : f.pos;   // lean toward the speaker: its bubble stays attached
+      if (r.place === 'street' && f.size > 3.5) {   // big subjects: shoot down the street (depth) instead of across it into the facades
+        const dist = (6 + f.size * 1.6) * k;
+        return { p: [aim.x + dist * 0.92, aim.y + dist * 0.2, aim.z + dist * 0.33], a: aim.toArray(), fov: 46 };
+      }
+      if (r.gag === 'launch') {   // the camera stays put and tilts up after the launched prop
+        const f0 = world.focusOf(r, r.t0, r.place), s0 = Math.min(2.2, Math.max(1, f0.size / 2.6));
+        return { p: f0.pos.toArray().map((v, i) => v + (p[i] - a[i]) * s0), a: f.pos.toArray(), fov };
+      }
       return { p: aim.toArray().map((v, i) => v + (p[i] - a[i]) * s), a: aim.toArray(), fov };
     },
     gag(r, t) {

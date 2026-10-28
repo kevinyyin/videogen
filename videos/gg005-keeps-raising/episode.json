@@ -1,0 +1,18 @@
+{"title": "What if the AI kept <em>raising</em> the bet?", "seed": 5,
+ "cast": {"you": {"top": "#e8833a"}, "ai": {"name": "WREN", "color": "#2fb7a4"}},
+ "hud": {"label": "POT", "prefix": "$"},
+ "rungs": [
+  {"place": "casino", "gag": "poof", "prop": "chips", "at": "table", "say": "Raise.", "hud": 500},
+  {"place": "casino", "gag": "drop", "prop": "car", "at": "table", "say": "My car. Raise.", "hud": 40000},
+  {"place": "casino", "gag": "drop", "prop": "house", "at": "table", "say": {"who": "you", "text": "My house."}, "hud": 800000},
+  {"place": "street", "gag": "drop", "prop": "casino_building", "at": "pile", "say": "The casino. Raise.", "hud": 2000000000, "react": true},
+  {"place": "paris", "gag": "launch", "prop": "eiffel", "at": "tower", "lands": "pile", "say": "The Eiffel Tower.", "hud": 4000000000},
+  {"place": "street", "gag": "poof", "prop": "grandma", "at": "pile", "say": {"who": "you", "text": "My grandma."}, "hud": 8000000000, "cam": "wide"},
+  {"place": "street", "gag": "drop", "prop": "moon", "at": "pile", "say": "The Moon. Raise.", "hud": 1000000000000, "react": true},
+  {"place": "space", "gag": "say", "say": {"who": "you", "text": "I bet Earth."}, "hud": 9999999999999},
+  {"place": "street", "gag": "drop", "prop": "pile", "at": "you", "say": "I fold.", "hud": 9999999999999}],
+ "end": {"html": "What would you bet against an <em>AI</em>?", "small": "PLAY THEM FREE · GGHUMAN.AI"},
+ "caption": {"hook": "This AI would not stop raising 🃏🚀",
+  "summary": "Chips, a car, a casino, the Eiffel Tower, the Moon. Then I bet Earth. Play them free at gghuman.ai.",
+  "cta": "What would you bet against an AI? 👇", "send": "Send this to someone who never folds",
+  "tags": ["#animation", "#ai", "#poker", "#whatif", "#gghuman"]}}
