@@ -1,8 +1,8 @@
 {
-  "name": "edstudio",
+  "name": "videogen",
   "version": "1.0.0",
   "private": true,
-  "description": "EDStudio — procedural short-form videos (Three.js + headless Chrome + ffmpeg).",
+  "description": "Template-driven 3D promo Reels for gghuman.ai on the EDStudio engine (Three.js + headless Chrome + ffmpeg).",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "scripts": {
