@@ -39,7 +39,7 @@ BEATS = {
     "tower":     {"min": 3.6, "req": ["who", "height"], "at": {"push": 0.4, "grow0": 0.8, "peak": 2.6}, "say_at": 0.5, "money": (0.8, 2.6)},
     "peek":      {"min": 3.4, "req": ["who", "cards"], "at": {"lift": 0.6, "reveal": 1.0}, "say_at": 1.2, "money": (0.3, 0.9)},
     "flip":      {"min": 3.8, "req": ["who", "cards"], "at": {"flip": 0.8}, "say_at": 1.3, "money": (0.3, 0.9)},
-    "handshake": {"min": 3.2, "req": ["who"], "at": {"shake0": 1.0, "shake1": 1.8}, "say_at": 0.4, "money": (0.3, 0.9)},
+    "handshake": {"min": 3.2, "req": ["who"], "at": {"shake0": 1.0, "shake1": 1.8}, "say_at": 1.0, "money": (0.3, 0.9)},
     "wall":      {"min": 3.6, "req": ["who", "around", "height"], "at": {"rise0": 0.5, "rise1": 2.5}, "say_at": 0.5, "money": (0.5, 2.5)},
     "kick":      {"min": 3.6, "req": ["who", "tower_of"], "at": {"kick": 0.8, "topple": 1.2, "impact": 1.9}, "say_at": 2.1, "money": (0.3, 0.9)},
     "captcha":   {"min": 4.0, "req": ["target", "text"], "at": {"slam": 0.5, "taps": [1.4, 1.85, 2.3, 2.75, 3.2]}, "say_at": 3.3, "money": (0.3, 0.9)},

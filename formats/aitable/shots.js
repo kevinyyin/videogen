@@ -9,13 +9,13 @@
 import * as THREE from 'three';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { K, KV, clamp, lerp, smooth, easeIO, win, faceToward, rng, canvasTex } from '@engine/core.js';
+import { K, KV, clamp, lerp, smooth, easeIO, win, faceToward, walkLegs, rng, canvasTex } from '@engine/core.js';
 import { makePerson, applyPose, basePose } from '@engine/rig.js';
 import { makeSpeechBubble } from '@engine/props.js';
 import { buildCasino } from '@engine/sets/casino.js';
 import { FIG_S, FELT_Y, SEATS, makeRobot, makeChips, chipStackY, makeCard, makeGiantHand, makeCaptcha } from './pieces.js';
 
-const CAM_OF = { deal: 'wide', tower: 'tiltUp', peek: 'overShoulder', flip: 'flipCam', handshake: 'twoShot', wall: 'high', kick: 'wide', captcha: 'high', flick: 'wide' };
+const CAM_OF = { deal: 'wide', tower: 'tiltUp', peek: 'overShoulder', flip: 'flipCam', handshake: 'twoShot', wall: 'high', kick: 'kickCam', captcha: 'high', flick: 'wide' };
 const HEAD_UP = 0.13 * FIG_S;   // headG -> head center (robot box / human sphere), world meters
 const TIP = 0.22, G = 3;        // a topple: seconds the column tips as one piece; slow-motion gravity (m/s²) so the fall reads big
 const CARD_L = 0.088;
@@ -126,8 +126,10 @@ export async function build(studio, story) {
   const u01 = (b, t) => clamp((t - b.t0) / (b.t1 - b.t0));
   const cams = {
     wide(b, t) {
-      const [cx, cz] = centroid(), push = lerp(1, 0.94, u01(b, t));
-      return { p: [cx + 0.75 * push, FELT_Y + 0.08 * push, cz + 0.1 * push], a: [cx - 0.02, FELT_Y + 0.05, cz], fov: 36, focus: [cx, FELT_Y + 0.05, cz] };
+      // backs off with the cast's spread across the frame (z): a 9:16 frame is 0.365·d wide at fov 36
+      const [cx, cz] = centroid(), push = lerp(1, 0.94, u01(b, t)), zs = Math.max(...ids.map((i) => cast[i].z)) - Math.min(...ids.map((i) => cast[i].z));
+      const d = Math.max(0.75, (zs + 0.12) / 0.365) * push;
+      return { p: [cx + d, FELT_Y + 0.08 * push, cz + 0.1 * push], a: [cx - 0.02, FELT_Y + 0.05, cz], fov: 36, focus: [cx, FELT_Y + 0.05, cz] };
     },
     hero(b, t) {
       const id = heroOf(b), h = headW(id), f = cast[id], d = lerp(0.25, 0.22, u01(b, t));
@@ -142,7 +144,8 @@ export async function build(studio, story) {
     twoShot(b, t) {
       const [a1, a2] = Array.isArray(b.who) ? b.who : [heroOf(b), 'you'];
       const m = headW(a1).add(headW(a2)).multiplyScalar(0.5), d = lerp(0.42, 0.38, u01(b, t));
-      return { p: [m.x + d, m.y + 0.02, m.z + 0.03], a: m.toArray(), fov: 32, focus: m.toArray() };
+      // elevated: a level two-shot from +x had the near seat standing right in the lens
+      return { p: [m.x + d * 1.05, m.y + 0.22, m.z + 0.03], a: m.toArray(), fov: 32, focus: m.toArray() };
     },
     tiltUp(b, t) {   // from the +z side (the near seat stays out of the lens), tilting up the growing tower
       const id = heroOf(b), h = headW(id), st = stacks[id], w = towers.find((x) => x.id === id) || { g0: b.t0, peak: b.t1 };
@@ -156,15 +159,19 @@ export async function build(studio, story) {
       const k = lerp(1, 0.93, u01(b, t)), a = [lerp(h.x, c[0], 0.55), lerp(h.y, c[1], 0.55), lerp(h.z, c[2], 0.55) + 0.015];
       return { p: [c[0] + 0.27 * k, FELT_Y + 0.24 * k, c[2] + 0.08 * k], a, fov: 36, focus: a };   // steep: looks down past the pot
     },
+    kickCam(b, t) {   // the victim, its tall stack and the kicker, from the +z side (from +x the wall ring filled the foreground)
+      const m = kickMid(b), k = lerp(1, 0.9, u01(b, t)), O = cast[b.tower_of];
+      return { p: [m[0] + 0.12 * k, FELT_Y + 0.22 * k, m[1] + 0.42 * k], a: [m[0], FELT_Y + 0.07, m[1]], fov: 38, focus: [O.x, FELT_Y + 0.05, O.z] };
+    },
     topple(b, t) {   // high diagonal over tower -> target, pushing in on the pile
       const ev = topples.find((e) => e.t0 === b.at.fall), st = stacks[ev.id], tg = cast[ev.target];
       const m = [(st.x + tg.x) / 2, FELT_Y, (st.z + tg.z) / 2], k = lerp(1, 0.88, clamp((t - ev.t0) / 2.5));
       return { p: [m[0] + 0.42 * k, FELT_Y + 0.36 * k, m[2] - 0.3 * k], a: [m[0] - 0.01, FELT_Y + 0.07, m[2] + 0.01], fov: 40, focus: [tg.x, FELT_Y + 0.04, tg.z] };   // from -z: the far robot lands upper-right, clear of the HUD
     },
     high(b, t) {
-      const id = b.around || b.target || 'you', f = cast[id], k = lerp(1, 0.93, u01(b, t));
+      const id = b.around || b.target || 'you', f = cast[id], k = lerp(1, 0.78, smooth(u01(b, t)));   // a real push-in: the 1 fps scan went static
       const a = [f.x, FELT_Y + 0.02, f.z];
-      return { p: [f.x + 0.35 * k, FELT_Y + 0.5 * k, f.z + 0.05], a, fov: 34, focus: a };
+      return { p: [f.x + 0.4 * k, FELT_Y + 0.58 * k, f.z + 0.05], a, fov: 40, focus: a };   // wide enough for a 0.28 m wall ring
     },
   };
   const titleBeat = { t0: 0, t1: story.title.out + 0.6 };
@@ -198,13 +205,57 @@ export async function build(studio, story) {
     topples.push(ev);
   });
   const potChips = Array.from({ length: 8 }, () => [(R() - 0.5) * 0.05, (R() - 0.5) * 0.05 - 0.07, Math.floor(R() * 4)]);   // off the near->far camera lines
+  // walls: 14 stacks rise around `around`, staggered 0.1 s, on a ring that clears its cards and own stack
+  const walls = beats.filter((b) => b.type === 'wall').map((b) => ({ b, cx: cast[b.around].x, cz: cast[b.around].z, n: 14, r: 0.12, cols: b.who.map((id) => stacks[id].color) }));
+  // walks: handshake partners meet in the middle; after a wall, the victim goes home to its stack and the kicker walks behind it
+  const walks = {}, faces = {};
+  ids.forEach((id) => { walks[id] = []; faces[id] = []; });
+  const seatOf = (id) => [cast[id].x, cast[id].z];
+  const kickMid = (b) => [(cast[b.tower_of].x + stacks[b.tower_of].x) / 2, (cast[b.tower_of].z + stacks[b.tower_of].z) / 2];
+  let kickSpot = null;
+  beats.forEach((b, i) => {
+    const next = beats[i + 1];
+    if (b.type === 'handshake') {
+      const [A, B] = b.who, a = seatOf(A), c = seatOf(B), d = Math.hypot(c[0] - a[0], c[1] - a[1]), ux = (c[0] - a[0]) / d, uz = (c[1] - a[1]) / d;
+      const M = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2];
+      walks[A].push({ t0: b.t0 + 0.05, t1: b.at.shake0 - 0.05, pts: [[M[0] - ux * 0.022, M[1] - uz * 0.022]] });
+      walks[B].push({ t0: b.t0 + 0.05, t1: b.at.shake0 - 0.05, pts: [[M[0] + ux * 0.022, M[1] + uz * 0.022]] });
+      faces[A].push([b.t0, b.t1, c]); faces[B].push([b.t0, b.t1, a]);
+      if (!(next && next.type === 'wall')) { walks[A].push({ t0: b.at.shake1 + 0.3, t1: b.t1 - 0.1, pts: [a] }); walks[B].push({ t0: b.at.shake1 + 0.3, t1: b.t1 - 0.1, pts: [c] }); }
+    }
+    if (b.type === 'wall') {
+      for (const id of b.who) faces[id].push([b.t0, b.at.rise1 + 0.3, seatOf(b.around)]);
+      if (next && next.type === 'kick') {
+        const O = next.tower_of, S = [stacks[O].x, stacks[O].z], o = seatOf(O), d = Math.hypot(S[0] - o[0], S[1] - o[1]);
+        kickSpot = [S[0] + ((S[0] - o[0]) / d) * 0.035, S[1] + ((S[1] - o[1]) / d) * 0.035];
+        walks[O].push({ t0: b.at.rise1, t1: b.t1 - 0.2, pts: [o] });
+        walks[next.who].push({ t0: b.at.rise1, t1: b.t1 - 0.1, pts: [kickSpot] });
+        faces[next.who].push([b.t1 - 0.1, 1e9, S]);
+      }
+    }
+  });
+  const kickEv = topples.find((e) => e.kicker);
+  // after the kick, kicker and victim turn to the kick camera (laugh / cry read on their screens)
+  for (const b of beats) if (b.type === 'kick') {
+    const m = kickMid(b), cam = [m[0] + 0.12, m[1] + 0.42];
+    for (const id of [b.who, b.tower_of]) { faces[id] = faces[id].map((f) => (f[1] > b.at.impact ? [f[0], b.at.impact + 0.1, f[2]] : f)); faces[id].push([b.at.impact + 0.1, 1e9, cam]); }
+    faces[b.tower_of].push([b.t0, b.at.impact + 0.1, [stacks[b.tower_of].x, stacks[b.tower_of].z]]);
+  }
   function column(st, n, phi, dx, dz, col) {
     const sn = Math.sin(phi), cs = Math.cos(phi);
     for (let k = 0; k < n; k++) { const y = chipStackY(k) - FELT_Y; chips.add(st.x + dx * y * sn, FELT_Y + y * cs, st.z + dz * y * sn, phi * dz, -phi * dx, col(k)); }
   }
   function drawChips(t) {
     chips.begin();
-    for (const [x, z, c] of potChips) chips.add(x, chipStackY(0), z, 0, 0, c);
+    const take = kickEv && kickSpot ? easeIO((t - kickEv.impact - 0.3) / 0.7) : 0;   // the kicker scoops the pot (arcing around the wall)
+    for (const [x, z, c] of potChips) {
+      const ex = kickSpot ? kickSpot[0] + x * 0.4 : x, ez = kickSpot ? kickSpot[1] + 0.03 + (z + 0.07) * 0.4 : z, mx = -0.06, mz = 0.06;
+      chips.add(lerp(lerp(x, mx, take), lerp(mx, ex, take), take), chipStackY(0), lerp(lerp(z, mz, take), lerp(mz, ez, take), take), 0, 0, c);
+    }
+    for (const w of walls) for (let j = 0; j < w.n; j++) {
+      const a = (j / w.n) * 6.283, h = Math.round(w.b.height * easeOut((t - w.b.at.rise0 - j * 0.1) / 0.6));
+      for (let k = 0; k < h; k++) chips.add(w.cx + Math.cos(a) * w.r, chipStackY(k), w.cz + Math.sin(a) * w.r, 0, 0, (w.cols[j % w.cols.length] + (k >> 3)) % 4);
+    }
     for (const id of ids) {
       const st = stacks[id], ev = topples.find((e) => e.id === id && t >= e.t0), col = (k) => (st.color + (k >> 3)) % 4;
       if (!ev) {
@@ -246,7 +297,8 @@ export async function build(studio, story) {
   const peekOf = (id) => beats.find((b) => b.type === 'peek' && b.who === id);
   const flipOf = (id) => beats.find((b) => b.type === 'flip' && b.who === id);
   const foldT = (beats.find((b) => b.then === 'fold') || { at: {} }).at.fold;
-  const MUCK = [0.045, -0.04];   // beside the pot, off every camera line
+  // beside the pot, off every camera line — or, boxed in by a wall, just in front of the human
+  const MUCK = walls.some((w) => w.b.around === 'you') ? [cast.you.x + fwdOf('you')[0] * 0.045, cast.you.z + fwdOf('you')[1] * 0.045] : [0.045, -0.04];
   const HAND_P = 0.5, TIP_L = 0.19;   // hand pitch (fingers angled down); wrist -> fingertip
   const hand = makeGiantHand(); scene.add(hand.g); hand.g.visible = false;
   const handKeys = !drops.length ? null : [[drops[0].tl - 1.2, [-0.55, FELT_Y + 0.42, 0]],
@@ -288,7 +340,36 @@ export async function build(studio, story) {
   }
 
   // poses gathered from every beat (pure in t): pushes, peeks, the fold slump, the flip reach, the laugh, the burial
+  function laughAt(id, t, t0, P) {   // a hop + flailing arms: a lean alone was millimeters at this scale and the shot went static
+    const laugh = smooth((t - t0) / 0.3) * (1 - smooth((t - t0 - 2.7) / 0.5));
+    if (laugh <= 0) return;
+    const w = Math.sin(t * 13);
+    Object.assign(P[id], { lean: 0.03 + 0.06 * w * laugh, y: 0.07 * Math.abs(Math.sin(t * 6.5)) * laugh,
+      armA: { sx: -0.3 * laugh, sz: (0.5 + 0.35 * w) * laugh, el: -1.1 * laugh, free: 0 }, armB: { sx: -0.3 * laugh, sz: (0.5 - 0.35 * w) * laugh, el: -1.1 * laugh, free: 0 } });
+  }
   function poses(t, P) {
+    for (const id of ids) {
+      if (!walks[id].length && !faces[id].length) continue;
+      const w = walks[id].length ? walkLegs(t, seatOf(id), walks[id]) : { x: cast[id].x, z: cast[id].z, dist: 0, speed: 0, head: null };
+      Object.assign(P[id], { x: w.x, z: w.z, dist: w.dist / FIG_S, speed: w.speed / FIG_S });
+      const f = faces[id].find(([a, b2]) => t >= a && t < b2);
+      if (w.speed > 1e-4 && w.head !== null) P[id].rotY = w.head;
+      else if (f) P[id].rotY = faceToward(w.x, w.z, f[2][0], f[2][1]);
+    }
+    for (const b of beats) {
+      if (b.type === 'handshake') {
+        const k = win(t, b.at.shake0 - 0.2, b.at.shake1 + 0.2, 0.15);
+        if (k > 0) for (const id of b.who) P[id].armA = { sx: -1.1 * k, sz: 0.1, el: (-0.3 + 0.25 * Math.sin(t * 18)) * k, free: 0 };
+      }
+      if (b.type === 'wall') {
+        const k = win(t, b.at.rise0 - 0.2, b.at.rise1, 0.2);
+        if (k > 0) b.who.forEach((id, i) => { const s1 = Math.sin(t * 9 + i * 1.7); P[id].armA = { sx: (-0.6 - 0.3 * s1) * k, sz: 0.2, el: -0.8 * k, free: 0 }; P[id].armB = { sx: (-0.6 + 0.3 * s1) * k, sz: 0.2, el: -0.8 * k, free: 0 }; });
+      }
+      if (b.type === 'kick') {
+        P[b.who].lean = K(t, [[b.at.kick - 0.45, 0.03], [b.at.kick - 0.12, -0.15], [b.at.kick + 0.05, 0.35], [b.at.kick + 0.5, 0.05]]);
+        laughAt(b.who, t, b.at.impact + 0.2, P);
+      }
+    }
     for (const w of towers) {
       const k = win(t, w.push - 0.25, w.push + 0.45, 0.2);
       if (k > 0) P[w.id].armB = { sx: -0.9 * k, sz: 0.12, el: -0.4 * k, free: 0 };
@@ -303,12 +384,7 @@ export async function build(studio, story) {
     for (const b of beats) if (b.type === 'flip') {
       const k = win(t, b.at.flip - 0.3, b.at.flip + 0.6, 0.2), f = b.at.flip;
       if (k > 0) P[b.who].armB = { sx: -0.8 * k, sz: 0.1, el: -0.5 * k, free: 0 };
-      const laugh = smooth((t - f - 0.3) / 0.3) * (1 - smooth((t - f - 3) / 0.5));
-      if (laugh > 0) {   // a hop + flailing arms: a lean alone was millimeters at this scale and the shot went static
-        const w = Math.sin(t * 13);
-        Object.assign(P[b.who], { lean: 0.03 + 0.06 * w * laugh, y: 0.07 * Math.abs(Math.sin(t * 6.5)) * laugh,
-          armA: { sx: -0.3 * laugh, sz: (0.5 + 0.35 * w) * laugh, el: -1.1 * laugh, free: 0 }, armB: { sx: -0.3 * laugh, sz: (0.5 - 0.35 * w) * laugh, el: -1.1 * laugh, free: 0 } });
-      }
+      laughAt(b.who, t, f + 0.3, P);
     }
     for (const ev of topples) {
       if (t >= ev.t0 && t < ev.impact) P[ev.target].headPitch = -0.45 * smooth((t - ev.t0) / 0.25);
@@ -322,7 +398,8 @@ export async function build(studio, story) {
   const jolt = (t) => jolts.reduce((sum, [te, A]) => sum + (t >= te ? A * Math.exp(-(t - te) * 10) * Math.sin((t - te) * 55) : 0), 0);
 
   const beatAt = (t) => { for (let i = beats.length - 1; i >= 0; i--) if (t >= beats[i].t0) return i; return -1; };
-  const faceAt = (id, t) => { let e = 'neutral'; for (const b of beats) if (t >= (b.type === 'flip' ? b.at.flip + 0.15 : b.t0) && b.face && b.face[id]) e = b.face[id]; return e; };
+  const faceOn = (b) => (b.type === 'flip' ? b.at.flip + 0.15 : b.type === 'kick' ? b.at.impact : b.t0);   // faces change on the reveal
+  const faceAt = (id, t) => { let e = 'neutral'; for (const b of beats) if (t >= faceOn(b) && b.face && b.face[id]) e = b.face[id]; return e; };
   const camOf = (b, t) => (b.after === 'topple' && t >= b.at.fall - 0.3 ? 'topple' : b.cam || CAM_OF[b.type]);
 
   // ---------------------------------------------------------------- lineup (t >= 200: --stills 200,201,202,203,204)
@@ -397,7 +474,7 @@ export async function build(studio, story) {
     for (const m of moments) {
       update(m); scene.updateMatrixWorld(true);
       const cn = camOf(b, m);   // tilt-up and over-the-shoulder frame a thing (tower top, cards), not a head
-      const heads = cn === 'topple' ? ['you', heroOf(b)] : Array.isArray(b.who) ? b.who : Array.isArray(b.to) ? b.to : [heroOf(b)];
+      const heads = cn === 'topple' ? ['you', heroOf(b)] : b.type === 'wall' && m > b.at.rise1 ? [b.around] : Array.isArray(b.who) ? b.who : Array.isArray(b.to) ? b.to : [heroOf(b)];
       const pts = cn === 'overShoulder' || (cn === 'tiltUp' && m >= b.at.grow0) ? [['focus', new THREE.Vector3().fromArray(shot.focus)]]
         : heads.map((id) => [id + ' head', headW(id)]);
       const B = bubbles[n];
