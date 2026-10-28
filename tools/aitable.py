@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """AI Table harness: videos/<slug>/episode.json -> story.json + cues.json + caption.md + shots.js stub (formats/aitable/).
 
-    python3 -I tools/aitable.py gg001-ai-bluff
+    python3 -I tools/aitable.py ggNNN-slug
 
 Why: every AI Table episode is the same machine — tiny players on a giant poker table, a "What if…?" title, 3–4 beats from
 a fixed library, an end card — so the only per-video input is a short episode.json. This tool validates it (fails loudly

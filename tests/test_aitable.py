@@ -126,9 +126,64 @@ class CuesAndCaption(unittest.TestCase):
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+# the retired gg002/gg003 episodes, inlined (their folders were removed when the ladder format replaced aitable)
+GG002 = {'title': 'What if two AIs <em>teamed up</em> against you?',
+         'seed': 2,
+         'cast': [{'id': 'you', 'kind': 'human', 'seat': 'near', 'top': '#3aa7d9'},
+                  {'id': 'WREN', 'kind': 'robot', 'seat': 'left', 'color': '#e8833a'},
+                  {'id': 'ORBIT', 'kind': 'robot', 'seat': 'right', 'color': '#2fb7a4', 'stack': 60}],
+         'pot': 300,
+         'beats': [{'type': 'deal', 'to': ['you', 'WREN', 'ORBIT'], 'sub': 'Two AIs. One human. Fair game.'},
+                   {'type': 'handshake',
+                    'who': ['WREN', 'ORBIT'],
+                    'say': {'who': 'WREN', 'text': 'Alliance?'},
+                    'face': {'WREN': 'smug', 'ORBIT': 'smug'}},
+                   {'type': 'wall',
+                    'who': ['WREN', 'ORBIT'],
+                    'around': 'you',
+                    'height': 30,
+                    'pot': 9000,
+                    'then': 'fold',
+                    'sub': 'They box him in. He folds.'},
+                   {'type': 'kick',
+                    'who': 'WREN',
+                    'tower_of': 'ORBIT',
+                    'say': 'Alliance over.',
+                    'face': {'WREN': 'laugh', 'ORBIT': 'cry'}}],
+         'end': {'html': 'Would you trust an AI <em>teammate</em>?', 'small': 'PLAY THEM FREE · GGHUMAN.AI'},
+         'caption': {'hook': 'Never trust an AI alliance 🤝🤖',
+                     'summary': 'Two AIs team up to squeeze one human out of the pot. Then one of them gets greedy. Play '
+                                'them free at gghuman.ai.',
+                     'cta': 'Who would you team up with? 👇',
+                     'send': 'Send this to your backstabbing friend',
+                     'tags': ['#animation', '#ai', '#poker', '#gghuman', '#whatif']}}
+GG003 = {'title': 'What if the AIs thought <em>you</em> were the bot?',
+         'seed': 3,
+         'cast': [{'id': 'you', 'kind': 'human', 'seat': 'near', 'top': '#d94b4b'},
+                  {'id': 'VESPER', 'kind': 'robot', 'seat': 'left', 'color': '#7b5cff'},
+                  {'id': 'WREN', 'kind': 'robot', 'seat': 'right', 'color': '#e8833a'}],
+         'pot': 400,
+         'beats': [{'type': 'deal',
+                    'to': ['you', 'VESPER', 'WREN'],
+                    'say': {'who': 'VESPER', 'text': "You haven't blinked."},
+                    'face': {'VESPER': 'suspicious', 'WREN': 'suspicious'}},
+                   {'type': 'captcha', 'target': 'you', 'text': 'SELECT ALL THE ACES', 'sub': "Prove you're human."},
+                   {'type': 'flick',
+                    'target': 'you',
+                    'sub': 'Solved in 0.4 seconds.',
+                    'face': {'VESPER': 'TEXT:BOT DETECTED', 'WREN': 'TEXT:BOT DETECTED'}}],
+         'end': {'html': "Could you prove you're <em>human</em>?", 'small': 'PLAY THEM FREE · GGHUMAN.AI'},
+         'caption': {'hook': 'The AIs ran a CAPTCHA on me 🤖🔍',
+                     'summary': 'One human, two robots, and the robots are getting suspicious. On GGhuman you play poker '
+                                'against AIs that think like people. Play them free at gghuman.ai.',
+                     'cta': "Could you prove you're human? 👇",
+                     'send': 'Send this to someone who types too fast',
+                     'tags': ['#animation', '#ai', '#poker', '#gghuman', '#whatif']}}
+EPISODES = {"gg001-ai-bluff": GG001, "gg002-ai-alliance": GG002, "gg003-prove-human": GG003}
+
+
 def episode(slug):
-    import json
-    return json.load(open(os.path.join(ROOT, "videos", slug, "episode.json")))
+    return copy.deepcopy(EPISODES[slug])
 
 
 def errs(e):
