@@ -1,0 +1,83 @@
+{
+ "title": "What if an AI could <em>bluff</em> you?",
+ "seed": 1,
+ "cast": [
+  {
+   "id": "you",
+   "kind": "human",
+   "seat": "near",
+   "top": "#f2c230"
+  },
+  {
+   "id": "VESPER",
+   "kind": "robot",
+   "seat": "far",
+   "color": "#7b5cff"
+  }
+ ],
+ "pot": 200,
+ "hud": {
+  "line1": "NO-LIMIT HOLD'EM",
+  "line2": ""
+ },
+ "beats": [
+  {
+   "type": "deal",
+   "to": [
+    "you",
+    "VESPER"
+   ],
+   "sub": "This AI has never lost a hand."
+  },
+  {
+   "type": "tower",
+   "who": "VESPER",
+   "height": 120,
+   "say": "All in.",
+   "pot": 50000,
+   "face": {
+    "VESPER": "smug"
+   }
+  },
+  {
+   "type": "peek",
+   "who": "you",
+   "cards": [
+    "As",
+    "Ad"
+   ],
+   "then": "fold",
+   "sub": "Pocket aces. He folds anyway."
+  },
+  {
+   "type": "flip",
+   "who": "VESPER",
+   "cards": [
+    "7c",
+    "2d"
+   ],
+   "say": "gg, human.",
+   "after": "topple",
+   "face": {
+    "VESPER": "laugh"
+   }
+  }
+ ],
+ "end": {
+  "html": "Could you tell it was <em>lying</em>?",
+  "small": "PLAY THEM FREE · GGHUMAN.AI"
+ },
+ "caption": {
+  "hook": "This AI has never lost a hand 🃏🤖",
+  "summary": "Pocket aces against a tiny robot that just went all in. On GGhuman the AIs bluff, lie and team up, just like people. Play them free at gghuman.ai.",
+  "cta": "Would you have called? 👇",
+  "send": "Send this to your poker friend",
+  "tags": [
+   "#animation",
+   "#ai",
+   "#poker",
+   "#gghuman",
+   "#whatif"
+  ]
+ }
+}

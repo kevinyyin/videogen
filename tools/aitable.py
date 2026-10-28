@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AI Table harness: videos/<slug>/episode.json -> videos/<slug>/story.json (the GGhuman format, formats/aitable/).
+"""AI Table harness: videos/<slug>/episode.json -> story.json + cues.json + caption.md + shots.js stub (formats/aitable/).
 
     python3 -I tools/aitable.py gg001-ai-bluff
 
@@ -22,6 +22,7 @@ Any beat may carry say / sub / pot / face / cam / len, plus the endings then: "f
 import json
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -148,6 +149,15 @@ def validate(ep):
         if b.get("after", "topple") != "topple": errs.append(f"beat {n}: after must be \"topple\"")
         if b.get("after") == "topple" and not had_tower: errs.append(f"beat {n}: 'after: topple' needs an earlier tower beat")
         had_tower = had_tower or typ == "tower"
+    c = ep.get("caption")
+    if not c: errs.append("missing 'caption'")
+    else:
+        if not c.get("hook") or not c.get("summary"): errs.append("caption: needs a hook and a summary")
+        if "👇" not in c.get("cta", ""): errs.append("caption: the cta needs a question with 👇")
+        if not c.get("send", "").startswith("Send this to"): errs.append("caption: send must start with 'Send this to'")
+        tags = c.get("tags", [])
+        if len(tags) != 5 or "#animation" not in tags or not all(str(x).startswith("#") for x in tags):
+            errs.append("caption: exactly 5 hashtags incl. #animation")
     if structural or not ep.get("beats"): return errs
     tl = layout(ep)
     for n, b in enumerate(tl["beats"], 1):
@@ -190,6 +200,94 @@ def story(ep, tl):
     }
 
 
+def cues(ep, tl):
+    """cues.json (audio/synth.py format) from the same key-moment times story.json carries."""
+    dur, end_in = tl["duration"], tl["end_in"]
+    ev, impacts = [], []
+    robots = {c["id"] for c in ep["cast"] if c["kind"] == "robot"}
+
+    def e(t, sound, gain, **args):
+        ev.append({"t": round(t, 3), "sound": sound, "gain_db": gain, "pan": 0.0, "room": -16, "args": args})
+
+    def every(t0, t1, step, fn):
+        k = max(1, int(round((t1 - t0) / step)))
+        for i in range(k + 1): fn(t0 + i * (t1 - t0) / k, i / k)
+
+    for b in tl["beats"]:
+        a, typ = b["at"], b["type"]
+        if typ == "deal":
+            for x in a["land"]: e(x, "giant_step", -30, size=0.5)
+        elif typ == "tower":
+            e(a["push"], "chip_clack", -30, n=2)
+            every(a["grow0"], a["peak"], 0.12, lambda t, u: e(t, "chip_clack", round(-30 + 6 * u, 1), n=2, size=round(0.8 + 0.4 * u, 2)))
+            e(a["peak"], "low_swell", -28, dur=1.8, pitch=0.8)   # low_swell peaks at its anchor (its end)
+        elif typ == "peek":
+            e(a["lift"], "blanket_rustle", -32, dur=0.4, intensity=0.6)
+        elif typ == "flip":
+            e(a["flip"], "giant_step", -27, size=0.7)
+        elif typ == "handshake":
+            e(a["shake0"], "metal_clang", -30, size=0.3, pitch=1.4)
+        elif typ == "wall":
+            every(a["rise0"], a["rise1"], 0.15, lambda t, u: e(t, "chip_clack", -30, n=2))
+        elif typ == "kick":
+            e(a["kick"], "metal_clang", -28, size=0.4)
+            e(a["topple"], "chip_clack", -26, n=8, spread=0.5)
+            impacts.append(a["impact"])
+        elif typ == "captcha":
+            e(a["slam"], "giant_step", -24, size=1.3)
+            for x in a["taps"]: e(x, "robot_bleep", -30, pitch=1.6, n=1)
+            ev.append({"sound": "footsteps", "t0": round(a["taps"][0] - 0.3, 3), "t1": a["taps"][-1], "rate": 12.0, "gain_db": -44, "room": -16})
+        elif typ == "flick":
+            e(a["flick"], "bonk", -26)
+            e(a["land"], "giant_step", -28, size=0.5)
+        if b.get("then") == "fold": e(a["fold"], "giant_step", -30, size=0.4)
+        if b.get("after") == "topple":
+            e(a["fall"], "chip_clack", -26, n=8, spread=0.5)
+            impacts.append(a["impact"])
+        who, text = say_of(b)
+        if text and who in robots: e(b["say_at"], "robot_bleep", -28, pitch=1.0, n=2)
+    for t in impacts:
+        e(t, "distant_boom", -22, size=0.6)
+        e(t, "chip_clack", -24, n=14, spread=0.8)
+
+    prog, chords, t, i = ["Cm7", "F7", "Bbmaj7", "G7"], [], TITLE_OUT, 0
+    while t < end_in - 1e-6:
+        chords.append([round(t, 3), prog[i % 4]]); t += 1.6; i += 1
+    chords += [[end_in, "Abmaj7"], [round(end_in + 1.4, 3), "G7"], [round(end_in + 2.6, 3), "Cm7"]]
+    music = {
+        "instrument": "piano", "gain_db": 0.0, "reverb_db": -10.0, "pad_db": 2.0, "pad_reverb_db": -5.0, "mallet_db": -2.0,
+        "leveler": {"thr_rel_db": 3.0, "ratio": 2.5, "tau": 0.25}, "end": dur, "chords": chords,
+        "sections": [
+            {"t0": TITLE_OUT, "t1": end_in, "style": "walk", "vel": [[TITLE_OUT, 0.24], [end_in, 0.28]], "step": 0.4,
+             "bass_hold": 0.95, "bass_vel": 0.95, "comp_vel": 0.42, "stab_hold": 0.8, "swing": 0.14},
+            {"t0": end_in, "t1": dur, "style": "arp", "vel": 0.22, "step": 0.4, "pattern": [0, 1, 2, 3, 2, 1]}],
+        "melody": [], "mallet_melody": [],
+        "pad": [{"t0": round(TITLE_OUT - 0.3, 3), "t1": dur, "notes": [36, 48, 55], "level": 0.8, "attack": 0.8, "release": 0.8}],
+        "stings": [{"t": TITLE_OUT, "midi": 36, "vel": 0.3, "hold": 1.3}] + [{"t": t, "midi": 36, "vel": 0.26, "hold": 0.9} for t in impacts],
+        "ducks": [], "auto_duck": {"db": -3.0, "categories": ["prop"], "lookahead": 0.04, "hold": 0.4, "smooth": 0.2, "max_len": 1.0},
+        "eq": [{"f": 2800, "q": 0.8, "db": -2.0}, {"f": 6500, "q": 0.6, "db": -4.0}],
+    }
+    return {
+        "title": plain(ep["title"]), "duration": dur, "target_lufs": -15.0, "limiter_ceiling_dbtp": -1.5,
+        "end_fade": [round(dur - 1.0, 3), dur],
+        "stem_gain_db": {"music": -6.0, "sfx": 12.0, "amb": 9.0},
+        "stem_dynamics": {"music": {"limit_dbfs": -3.0, "lim_win": 0.015},
+                          "sfx": {"comp_thr_dbfs": -15.0, "ratio": 2.5, "win": 0.004, "limit_dbfs": -5.0}},
+        "sfx_lowpass_hz": 5000,
+        "shots": [0.0, TITLE_LEN] + [b["t1"] for b in tl["beats"]] + [dur],
+        "ambience": [
+            {"sound": "room_tone", "t0": 0.0, "t1": dur, "fade_in": 0.4, "fade_out": 0.06, "gain_db": -38, "seed": 1},
+            {"sound": "city_day", "t0": 0.0, "t1": dur, "fade_in": 1.0, "fade_out": 0.06, "gain_db": -47, "seed": 2,
+             "args": {"murmur": 0.6, "traffic": 0.0}}],
+        "events": ev, "music": music,
+    }
+
+
+def caption_md(ep):
+    c = ep["caption"]
+    return f"# Caption\n\n{c['hook']}\n\n{c['summary']}\n\n{c['cta']}\n{c['send']}\n\n{' '.join(c['tags'])}\n"
+
+
 def build(slug):
     vdir = os.path.join(ROOT, "videos", slug)
     ep = json.load(open(os.path.join(vdir, "episode.json")))
@@ -200,6 +298,14 @@ def build(slug):
         sys.exit(1)
     tl = layout(ep)
     json.dump(story(ep, tl), open(os.path.join(vdir, "story.json"), "w"), indent=1, ensure_ascii=False)
+    json.dump(cues(ep, tl), open(os.path.join(vdir, "cues.json"), "w"), indent=1, ensure_ascii=False)
+    open(os.path.join(vdir, "caption.md"), "w").write(caption_md(ep))
+    stub = os.path.join(vdir, "shots.js")
+    if not os.path.exists(stub): open(stub, "w").write("export * from '/formats/aitable/shots.js';\n")
+    chk = subprocess.run([sys.executable, "-I", os.path.join(ROOT, "tools", "caption.py"), vdir], capture_output=True, text=True)
+    if chk.returncode:
+        print(f"{slug}: caption.md fails tools/caption.py:\n{chk.stdout}{chk.stderr}")
+        sys.exit(1)
     print(f"{slug}: {len(tl['beats'])} beats, duration {tl['duration']:.1f} s (end card in at {tl['end_in']:.1f})")
     for b in tl["beats"]:
         moments = ", ".join(f"{k} {v if not isinstance(v, list) else '/'.join(map(str, v))}" for k, v in b["at"].items())

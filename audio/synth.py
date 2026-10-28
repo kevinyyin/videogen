@@ -1172,6 +1172,39 @@ def sfx_distant_boom(rng, dur=3.5, size=1.0):
     return Sound(norm(fades(x, 0.002, 0.5), 0.9), anchor=0.0, onsets=[0.0])
 
 
+def sfx_chip_clack(rng, n=1, size=1.0, spread=0.06):
+    """Clay poker chips (gg001): n soft clicks spread over `spread` s — band-limited noise ticks around 1.7 kHz (lower for a
+    bigger `size`), each ~6 ms, low-passed at 4 kHz so a tower of 100 of them never turns into a harsh rattle."""
+    N = nsamp(spread + 0.06)
+    x = np.zeros(N)
+    f = 1700 / np.sqrt(size)
+    for i in range(int(n)):
+        k0 = 0 if i == 0 else int(rng.uniform(0, spread) * SR)
+        m = min(nsamp(0.03), N - k0)
+        if m <= 0: continue
+        click = bp(white(m, rng) * np.exp(-tvec(m) / 0.006), f * 0.7, f * 1.3)
+        x[k0:k0 + m] += click * (1.0 if i == 0 else rng.uniform(0.4, 0.75))   # the first click leads, so the onset lands on the cue
+    return Sound(norm(fades(lp(x, 4000), 0.0005, 0.01)), onsets=[(0.0, "transient")])
+
+
+def sfx_robot_bleep(rng, pitch=1.0, n=2, dur=0.09):
+    """A tiny robot's chirp (gg001): n soft sine blips (520 Hz x pitch, a +-8 % glide, 10 ms attack, 50 ms gaps), low-passed
+    at 3 kHz — cute, never an alarm beep."""
+    gap = 0.05
+    N = nsamp(n * dur + (n - 1) * gap + 0.02)
+    x = np.zeros(N)
+    for i in range(int(n)):
+        f0 = 520 * pitch * rng.uniform(0.95, 1.05)
+        m = nsamp(dur)
+        tt = tvec(m)
+        fr = np.linspace(f0, f0 * (1.08 if rng.uniform() < 0.5 else 0.92), m)
+        ph = 2 * np.pi * np.cumsum(fr) / SR
+        env = np.clip(np.minimum(tt / 0.01, (dur - tt) / 0.03), 0, 1)
+        k0 = nsamp(i * (dur + gap))
+        x[k0:k0 + m] += ((np.sin(ph) + 0.15 * np.sin(2 * ph)) * env)[:N - k0]
+    return Sound(norm(lp(x, 3000)), onsets=[(0.0, "transient")])
+
+
 def amb_room_tone(dur, rng):
     n = nsamp(dur)
     out = []
@@ -2118,6 +2151,8 @@ SFX = {
     "fish_blub": (sfx_fish_blub, "prop"),
     "hamster_squeak": (sfx_hamster_squeak, "prop"),
     "distant_boom": (sfx_distant_boom, "prop"),
+    "chip_clack": (sfx_chip_clack, "prop"),
+    "robot_bleep": (sfx_robot_bleep, "prop"),
     "phone_buzz": (sfx_phone_buzz, "prop"),
 }
 

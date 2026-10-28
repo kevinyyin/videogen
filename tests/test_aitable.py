@@ -103,5 +103,25 @@ class Layout(unittest.TestCase):
         self.assertEqual(s["episode"]["beats"][1]["at"]["peak"], 8.4)
 
 
+class CuesAndCaption(unittest.TestCase):
+    def test_cues_land_on_key_moments(self):
+        tl = aitable.layout(ep()); c = aitable.cues(ep(), tl)
+        booms = [x["t"] for x in c["events"] if x["sound"] == "distant_boom"]
+        self.assertEqual(booms, [round(tl["beats"][3]["at"]["impact"], 3)])
+        self.assertEqual(c["music"]["sections"][0]["t0"], 2.0)
+        self.assertEqual(c["duration"], tl["duration"])
+
+    def test_human_say_has_no_bleep(self):
+        e = ep(); e["beats"][2]["say"] = "Fine."               # beat 3's who = "you"
+        tl = aitable.layout(e); c = aitable.cues(e, tl)
+        t0, t1 = tl["beats"][2]["t0"], tl["beats"][2]["t1"]
+        self.assertFalse([x for x in c["events"] if x["sound"] == "robot_bleep" and t0 <= x["t"] < t1])
+
+    def test_caption_rules(self):
+        self.assertIn("Send this to", aitable.caption_md(ep()))
+        e = ep(); e["caption"]["tags"] = e["caption"]["tags"][:4]
+        self.assertTrue(any("5 hashtags" in x for x in aitable.validate(e)))
+
+
 if __name__ == "__main__":
     unittest.main()
