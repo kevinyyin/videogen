@@ -15,7 +15,7 @@ import { makeSpeechBubble } from '@engine/props.js';
 import { buildCasino } from '@engine/sets/casino.js';
 import { FIG_S, FELT_Y, SEATS, makeRobot, makeChips, chipStackY, makeCard, makeGiantHand, makeCaptcha } from './pieces.js';
 
-const CAM_OF = { deal: 'wide', tower: 'tiltUp', peek: 'overShoulder', flip: 'flipCam', handshake: 'twoShot', wall: 'high', kick: 'kickCam', captcha: 'high', flick: 'wide' };
+const CAM_OF = { deal: 'wide', tower: 'tiltUp', peek: 'overShoulder', flip: 'flipCam', handshake: 'twoShot', wall: 'high', kick: 'kickCam', captcha: 'capCam', flick: 'flickCam' };
 const HEAD_UP = 0.13 * FIG_S;   // headG -> head center (robot box / human sphere), world meters
 const TIP = 0.22, G = 3;        // a topple: seconds the column tips as one piece; slow-motion gravity (m/s²) so the fall reads big
 const CARD_L = 0.088;
@@ -92,6 +92,7 @@ export async function build(studio, story) {
     const p = Object.assign(basePose(), { x: f.x, z: f.z, rotY: f.rotY, lean: 0.03 + 0.012 * Math.sin(t * 2.1 + f.phase), headYaw: 0.08 * Math.sin(t * 0.9 + f.phase) }, o);
     applyPose(f.rig, p);
     f.rig.root.position.y = FELT_Y + (o.y || 0) * FIG_S;
+    f.rig.root.rotation.x = o.rx || 0; f.rig.root.rotation.z = o.rz || 0;   // whole-body tumble (flick)
   }
   const _v = new THREE.Vector3();
   function headW(id, out = new THREE.Vector3()) {
@@ -118,6 +119,9 @@ export async function build(studio, story) {
       const p = headW(B.who, new THREE.Vector3()); p.y += 0.016;
       B.bub.sprite.position.copy(p); B.bub.setRows(1);
       B.bub.setPop(k * 0.6 * frameW(camera.position.distanceTo(p)));
+      // keep the whole bubble on screen when the speaker stands near a frame edge (it spans 0.6 of the width)
+      camera.updateMatrixWorld(); const x = (p.clone().project(camera).x + 1) / 2;
+      B.bub.sprite.center.x = clamp(0.5, 1 - (0.96 - x) / 0.6, (x - 0.04) / 0.6);
     });
   }
 
@@ -162,6 +166,21 @@ export async function build(studio, story) {
     kickCam(b, t) {   // the victim, its tall stack and the kicker, from the +z side (from +x the wall ring filled the foreground)
       const m = kickMid(b), k = lerp(1, 0.9, u01(b, t)), O = cast[b.tower_of];
       return { p: [m[0] + 0.12 * k, FELT_Y + 0.22 * k, m[1] + 0.42 * k], a: [m[0], FELT_Y + 0.07, m[1]], fov: 38, focus: [O.x, FELT_Y + 0.05, O.z] };
+    },
+    capCam(b, t) {   // high over the human and the CAPTCHA card, pushing in while they tap
+      const f = cast[b.target], k = lerp(1, 0.82, smooth(u01(b, t))), m = [lerp(f.x, CAP_C[0], 0.55), lerp(f.z, CAP_C[1], 0.55)];
+      return { p: [m[0] + 0.3 * k, FELT_Y + 0.42 * k, m[1] + 0.03 * k], a: [m[0] - 0.01, FELT_Y, m[1]], fov: 40, focus: [m[0], FELT_Y, m[1]] };
+    },
+    botCam(b, t) {   // a robot's screen up close: "BOT DETECTED" must be legible
+      // from the robot's outer side, toward +x (in front of it sat the human's head); the robot turns to it (faces[])
+      const h = headW(botOf()), k = lerp(1, 0.9, clamp((t - b.t0) / (b.at.reach + 0.5 - b.t0)));
+      return { p: [h.x + 0.2 * k, h.y + 0.012, h.z + Math.sign(h.z || 1) * 0.03 * k], a: h.toArray(), fov: 28, focus: h.toArray() };
+    },
+    flickCam(b, t) {   // the human + the giant hand coming in from -z (screen right); the flight leaves frame left
+      if (t < b.at.reach + 0.5) return cams.botCam(b, t);
+      const T = flickFrom(b), k = lerp(1, 0.94, u01(b, t));
+      // from +z: the whole hand + sleeve comes in across the frame and the human flies toward the lens
+      return { p: [T[0] + 0.36 * k, FELT_Y + 0.16 * k, T[1] + 0.12 * k], a: [T[0] - 0.02, FELT_Y + 0.06, T[1] - 0.03], fov: 38, focus: [T[0], FELT_Y + 0.05, T[1]] };
     },
     topple(b, t) {   // high diagonal over tower -> target, pushing in on the pile
       const ev = topples.find((e) => e.t0 === b.at.fall), st = stacks[ev.id], tg = cast[ev.target];
@@ -211,6 +230,17 @@ export async function build(studio, story) {
   const walks = {}, faces = {};
   ids.forEach((id) => { walks[id] = []; faces[id] = []; });
   const seatOf = (id) => [cast[id].x, cast[id].z];
+  // CAPTCHA: a giant card (0.6 x 0.25 x 0.35 m) slams down just in front of the target; the target sprints over it tapping the
+  // aces (cells 0, 4, 5, 8) and then VERIFY. Card-local (lx, lz) -> world via rotation.y = PI/2 (its top toward -x).
+  const capBeat = beats.find((b) => b.type === 'captcha'), CAP_S = 0.6;
+  const CAP_C = capBeat ? [cast[capBeat.target].x - 0.03 - 0.175 * CAP_S, cast[capBeat.target].z] : [0, 0];
+  const cap = capBeat ? makeCaptcha(capBeat.text) : null;
+  if (cap) { scene.add(cap.g); cap.g.scale.setScalar(CAP_S); cap.g.rotation.y = Math.PI / 2; cap.g.visible = false; }
+  const capW = ([lx, lz]) => [CAP_C[0] + CAP_S * lz, CAP_C[1] - CAP_S * lx];
+  const TAP_ORDER = [8, 5, 4, 0, 9];   // nearest ace first, VERIFY last
+  const tapSpot = (c) => capW(c === 9 ? cap.verifyAt : cap.cellsAt[c]);
+  const botOf = () => ids.find((i) => cast[i].c.kind === 'robot');
+  const flickFrom = (b) => (capBeat && capBeat.target === b.target ? tapSpot(9) : seatOf(b.target));
   const kickMid = (b) => [(cast[b.tower_of].x + stacks[b.tower_of].x) / 2, (cast[b.tower_of].z + stacks[b.tower_of].z) / 2];
   let kickSpot = null;
   beats.forEach((b, i) => {
@@ -222,6 +252,11 @@ export async function build(studio, story) {
       walks[B].push({ t0: b.t0 + 0.05, t1: b.at.shake0 - 0.05, pts: [[M[0] + ux * 0.022, M[1] + uz * 0.022]] });
       faces[A].push([b.t0, b.t1, c]); faces[B].push([b.t0, b.t1, a]);
       if (!(next && next.type === 'wall')) { walks[A].push({ t0: b.at.shake1 + 0.3, t1: b.t1 - 0.1, pts: [a] }); walks[B].push({ t0: b.at.shake1 + 0.3, t1: b.t1 - 0.1, pts: [c] }); }
+    }
+    if (b.type === 'flick') { const r = botOf(), c = cast[r]; faces[r].push([b.t0, b.at.reach + 0.5, [c.x + 0.2, c.z + Math.sign(c.z || 1) * 0.03]]); }
+    if (b.type === 'captcha') {
+      let t0 = b.at.slam + 0.15;
+      TAP_ORDER.forEach((c, k) => { walks[b.target].push({ t0, t1: b.at.taps[k] - 0.03, pts: [tapSpot(c)] }); t0 = b.at.taps[k] + 0.03; });
     }
     if (b.type === 'wall') {
       for (const id of b.who) faces[id].push([b.t0, b.at.rise1 + 0.3, seatOf(b.around)]);
@@ -248,7 +283,8 @@ export async function build(studio, story) {
   function drawChips(t) {
     chips.begin();
     const take = kickEv && kickSpot ? easeIO((t - kickEv.impact - 0.3) / 0.7) : 0;   // the kicker scoops the pot (arcing around the wall)
-    for (const [x, z, c] of potChips) {
+    const capDown = capBeat && t >= capBeat.at.slam - 0.25;   // the card slams over the pot
+    if (!capDown) for (const [x, z, c] of potChips) {
       const ex = kickSpot ? kickSpot[0] + x * 0.4 : x, ez = kickSpot ? kickSpot[1] + 0.03 + (z + 0.07) * 0.4 : z, mx = -0.06, mz = 0.06;
       chips.add(lerp(lerp(x, mx, take), lerp(mx, ex, take), take), chipStackY(0), lerp(lerp(z, mz, take), lerp(mz, ez, take), take), 0, 0, c);
     }
@@ -305,7 +341,21 @@ export async function build(studio, story) {
     ...drops.flatMap(({ card, tl }) => [[tl - 0.48, [card.x, FELT_Y + 0.2, card.z]], [tl - 0.3, [card.x, FELT_Y + 0.2, card.z]]]),
     [drops[drops.length - 1].tl + 0.4, [-0.55, FELT_Y + 0.42, 0.05]]];
   const handTip = (t) => KV(t, handKeys);
+  const flickBeat = beats.find((b) => b.type === 'flick');
   function drawHand(t) {
+    const fb = flickBeat;
+    // in from -z, index cocked under the thumb, then the snap; it swoops in only once the robot close-up has cut away
+    // (entering earlier, it crossed the close-up's lens as a blurry blob)
+    const t0h = fb ? fb.at.reach + 0.45 : 0;
+    if (fb && t >= t0h && t <= fb.at.flick + 0.9) {
+      const T = flickFrom(fb), P2 = 0.25, off = [T[0] + 0.05, FELT_Y + 0.3, T[1] - 0.5];
+      const tip = KV(t, [[t0h, off], [fb.at.flick - 0.15, [T[0], FELT_Y + 0.045, T[1] - 0.04]], [fb.at.flick, [T[0], FELT_Y + 0.045, T[1] - 0.03]], [fb.at.flick + 0.06, [T[0], FELT_Y + 0.05, T[1] + 0.01]], [fb.at.flick + 0.9, off]]);
+      hand.g.visible = true;
+      hand.g.position.set(tip[0], tip[1] + TIP_L * Math.sin(P2), tip[2] - TIP_L * Math.cos(P2));
+      hand.g.rotation.set(P2, 0, 0, 'YXZ');
+      hand.pose(t < fb.at.flick ? 'flick' : 'point', 1);
+      return;
+    }
     hand.g.visible = !!handKeys && t >= handKeys[0][0] && t <= handKeys[handKeys.length - 1][0];
     if (!hand.g.visible) return;
     const tip = handTip(t);
@@ -339,6 +389,15 @@ export async function build(studio, story) {
     });
   }
 
+  function drawCaptcha(t) {
+    if (!cap) return;
+    const b = capBeat, u = clamp((t - (b.at.slam - 0.25)) / 0.25);
+    cap.g.visible = t >= b.at.slam - 0.25;
+    cap.g.position.set(CAP_C[0], FELT_Y + 0.0015 + 0.4 * (1 - u * u), CAP_C[1]);   // +1.5 mm: the 0.6 scale shrank its lift under the dealt cards
+    cap.g.rotation.set(0.25 * (1 - u) * Math.sin(u * 7), Math.PI / 2, 0.15 * (1 - u), 'YXZ');
+    cap.setLit(TAP_ORDER.reduce((m, c, k) => ((m[c] = t >= b.at.taps[k]), m), []));
+  }
+
   // poses gathered from every beat (pure in t): pushes, peeks, the fold slump, the flip reach, the laugh, the burial
   function laughAt(id, t, t0, P) {   // a hop + flailing arms: a lean alone was millimeters at this scale and the shot went static
     const laugh = smooth((t - t0) / 0.3) * (1 - smooth((t - t0 - 2.7) / 0.5));
@@ -357,6 +416,15 @@ export async function build(studio, story) {
       else if (f) P[id].rotY = faceToward(w.x, w.z, f[2][0], f[2][1]);
     }
     for (const b of beats) {
+      if (b.type === 'captcha') {   // a jab at each square
+        const k = Math.max(0, ...b.at.taps.map((x) => win(t, x - 0.12, x + 0.15, 0.06)));
+        if (k > 0) Object.assign(P[b.target], { armB: { sx: -1.0 * k, sz: 0.1, el: -0.2, free: 0 }, crouch: 0.15 * k });
+      }
+      if (b.type === 'flick' && t >= b.at.flick) {   // launched: a ballistic arc toward +z, tumbling, lying still once it lands
+        const T = flickFrom(b), tau = t - b.at.flick, tl = 2 * 1.1 / G, q = Math.min(tau, tl);
+        Object.assign(P[b.target], { x: T[0] + 0.05 * q, z: T[1] + 0.7 * q, y: Math.max(0, 1.1 * q - 0.5 * G * q * q) / FIG_S,
+          rx: tau < tl ? -7 * tau : -Math.PI / 2, rz: 2.5 * q, speed: 0, armA: { sx: -0.3, sz: 1.4, el: -0.6, free: 0 }, armB: { sx: -0.3, sz: 1.4, el: -0.6, free: 0 }, mouth: 'o' });
+      }
       if (b.type === 'handshake') {
         const k = win(t, b.at.shake0 - 0.2, b.at.shake1 + 0.2, 0.15);
         if (k > 0) for (const id of b.who) P[id].armA = { sx: -1.1 * k, sz: 0.1, el: (-0.3 + 0.25 * Math.sin(t * 18)) * k, free: 0 };
@@ -394,7 +462,7 @@ export async function build(studio, story) {
       }
     }
   }
-  const jolts = [...drops.map((d) => [d.tl, 0.0008]), ...topples.map((e) => [e.impact, 0.0015])];
+  const jolts = [...drops.map((d) => [d.tl, 0.0008]), ...topples.map((e) => [e.impact, 0.0015]), ...(capBeat ? [[capBeat.at.slam, 0.0015]] : []), ...(flickBeat ? [[flickBeat.at.flick, 0.001]] : [])];
   const jolt = (t) => jolts.reduce((sum, [te, A]) => sum + (t >= te ? A * Math.exp(-(t - te) * 10) * Math.sin((t - te) * 55) : 0), 0);
 
   const beatAt = (t) => { for (let i = beats.length - 1; i >= 0; i--) if (t >= beats[i].t0) return i; return -1; };
@@ -453,7 +521,7 @@ export async function build(studio, story) {
     const P = {}; ids.forEach((id) => (P[id] = {}));
     poses(t, P);
     for (const id of ids) { pose(id, P[id], t); cast[id].setFace(faceAt(id, t)); }
-    drawHand(t); drawCards(t); drawChips(t);
+    drawHand(t); drawCards(t); drawChips(t); drawCaptcha(t);
     const i = beatAt(t), b = i >= 0 ? beats[i] : null;
     shot = b ? cams[camOf(b, t)](b, Math.min(t, b.t1)) : cams.wide(titleBeat, t);
     setCamera(shot.p, shot.a, shot.fov, t, 0.0004);
@@ -473,8 +541,9 @@ export async function build(studio, story) {
     const moments = Object.values(b.at).flat().concat([(b.t0 + b.t1) / 2]).filter((m) => m >= b.t0 && m < b.t1);
     for (const m of moments) {
       update(m); scene.updateMatrixWorld(true);
-      const cn = camOf(b, m);   // tilt-up and over-the-shoulder frame a thing (tower top, cards), not a head
-      const heads = cn === 'topple' ? ['you', heroOf(b)] : b.type === 'wall' && m > b.at.rise1 ? [b.around] : Array.isArray(b.who) ? b.who : Array.isArray(b.to) ? b.to : [heroOf(b)];
+      const cn = b.type === 'flick' && m < b.at.reach + 0.5 ? 'botCam' : camOf(b, m);   // tilt-up and over-the-shoulder frame a thing, not a head
+      if (b.type === 'flick' && m > b.at.flick + 0.1) continue;   // launched: leaving the frame is the joke
+      const heads = cn === 'botCam' ? [botOf()] : cn === 'topple' ? ['you', heroOf(b)] : b.type === 'wall' && m > b.at.rise1 ? [b.around] : Array.isArray(b.who) ? b.who : Array.isArray(b.to) ? b.to : [heroOf(b)];
       const pts = cn === 'overShoulder' || (cn === 'tiltUp' && m >= b.at.grow0) ? [['focus', new THREE.Vector3().fromArray(shot.focus)]]
         : heads.map((id) => [id + ' head', headW(id)]);
       const B = bubbles[n];
