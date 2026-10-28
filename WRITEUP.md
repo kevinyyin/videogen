@@ -8,9 +8,9 @@ Kevin Yin · for Oliver Zou, Deep24 · repo: github.com/kevinyyin/videogen
 
 | Episode | Hook | What escalates |
 |---|---|---|
-| `videos/gg004-words-come-true/final.mp4` (36.3 s) | What if everything an AI said *came true*? | "I have five aces" → they poof onto the table. Then its chips turn to gold, the table becomes a boat that sails down the street, you turn into a chicken, it rains chips, the casino walks off, and it declares itself President. "Nothing can stop me." The moon lands on it. |
-| `videos/gg005-keeps-raising/final.mp4` (36.1 s) | What if the AI kept raising the bet? | Neither side backs down. The AI raises with its chips, its car, the casino, the Eiffel Tower and the moon; you call with your house, your grandma and finally Earth. The AI says "I fold." and the whole pile falls on you. |
-| `videos/gg006-wont-stop-trading/final.mp4` (36.9 s) | What if the AI wouldn't *stop* trading? | A Catan trade from hell: 1 sheep for your wheat? No. 2, 8, 64 sheep fill the room, 1,000 flood the street, a million cover Paris. "…fine." Earth turns into 8 billion sheep. "Pleasure doing business." |
+| [`videos/gg004-words-come-true/final.mp4`](videos/gg004-words-come-true/final.mp4) (36.3 s) | What if everything an AI said *came true*? | "I have five aces" → they poof onto the table. Then its chips turn to gold, the table becomes a boat that sails down the street, you turn into a chicken, it rains chips, the casino walks off, and it declares itself President. "Nothing can stop me." The moon lands on it. |
+| [`videos/gg005-keeps-raising/final.mp4`](videos/gg005-keeps-raising/final.mp4) (36.1 s) | What if the AI kept raising the bet? | Neither side backs down. The AI raises with its chips, its car, the casino, the Eiffel Tower and the moon; you call with your house, your grandma and finally Earth. The AI says "I fold." and the whole pile falls on you. |
+| [`videos/gg006-wont-stop-trading/final.mp4`](videos/gg006-wont-stop-trading/final.mp4) (36.9 s) | What if the AI wouldn't *stop* trading? | A Catan trade from hell: 1 sheep for your wheat? No. 2, 8, 64 sheep fill the room, 1,000 flood the street, a million cover Paris. "…fine." Earth turns into 8 billion sheep. "Pleasure doing business." |
 
 **The style.** The page today posts flat 2D "POV" memes. These are 3D toy-world sims with a deadpan robot. Each episode
 takes one "What if…?" about an AI player and pushes it until it's absurd. Every rung ends in something physically big
