@@ -7,6 +7,12 @@ EDStudio engine: Three.js scene → headless Chrome → ffmpeg. No AI video, no 
 doors, and the dealer is a giant hand. Each episode is a 15–25 s "What if…?" with one big physical payoff and a
 `PLAY THEM FREE · GGHUMAN.AI` end card. One `episode.json` per video. A shared template does the rest.
 
+**Episodes:** [gg001 — What if an AI could bluff you?](videos/gg001-ai-bluff/final.mp4) ·
+[gg002 — What if two AIs teamed up against you?](videos/gg002-ai-alliance/final.mp4) ·
+[gg003 — What if the AIs thought you were the bot?](videos/gg003-prove-human/final.mp4)
+
+- Write-up (workflow, quality checks, failure handling, scaling to 100): [formats/aitable/WRITEUP.md](formats/aitable/WRITEUP.md)
+- Beat library + how to make an episode: [formats/aitable/README.md](formats/aitable/README.md)
 
 ## Run
 
