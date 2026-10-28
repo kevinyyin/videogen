@@ -63,9 +63,10 @@ export function makeWorld(ctx) {
     }
     if (r.gag === 'transform') {
       const isCast = CAST.includes(r.prop), tgt = isCast ? null : live(r.prop, P, k.puff - 0.01);
-      const from = tgt && tgt.kind === 'builtin' && tgt.name === 'table' ? anchorW(P, 'table').setY(0) : tgt ? tgtPos(tgt) : null;
+      const own = tgt && tgt.kind === 'builtin' ? anchorW(P, 'table') : null;   // the casino's own table + chips stand at the table
+      const from = own && tgt.name === 'table' ? own.setY(0) : tgt && !own ? tgtPos(tgt) : null;
       if (tgt && tgt.kind === 'builtin' && tgt.name === 'table') tgt.after = 0.38;   // table -> boat: what was on it now sits in the boat
-      const I = add({ name: r.to, place: P, born: k.puff, pos: from || (anchor ? anchor.clone() : anchorW(P, r.prop)), pop: k.puff,
+      const I = add({ name: r.to, place: P, born: k.puff, pos: from || (anchor ? anchor.clone() : own || anchorW(P, r.prop)), pop: k.puff,
         riders: !!(r.riders || (tgt && tgt.riders)), follow: isCast ? r.prop : null, growTo: r.scale || 1, growT: r.scale ? [k.puff + 0.3, k.grow1] : null });
       if (tgt) { tgt.gone = k.puff; I.moves = tgt.moves.filter((m) => m.t <= k.puff); I.onTable = tgt.onTable || (tgt.kind === 'builtin' && tgt.name === 'chips'); }
       if (isCast) castAs[r.prop] = { I, from: k.puff };
@@ -93,7 +94,7 @@ export function makeWorld(ctx) {
       if (T) { T.moves.push({ t: r.t0, place: P, path: [anchor.clone().add(new THREE.Vector3(12, 0, 0)), anchor.clone().add(new THREE.Vector3(-1.5, 0, 0))], go: [k.go0, k.go1] }); if (r.riders) T.riders = true; }
     }
     if (r.gag === 'rain') add({ kind: 'rain', name: r.prop, place: P, born: k.fall0, fall: [k.fall0, k.fall1], pos: (anchor || anchorW(P, 'you')).clone(), count: Math.min(600, r.count), seed: n });
-    if (r.gag === 'flood') add({ kind: 'flood', name: 'sheep', place: P, born: k.fill0, fill: [k.fill0, k.fill1], region: REGIONS[P][r.anchor] || null, anchor: anchor.clone(), count: r.count, seed: n });
+    if (r.gag === 'flood') add({ kind: 'flood', name: 'sheep', place: P, born: k.fill0, fill: [k.fill0, k.fill1], region: (REGIONS[P] || {})[r.anchor] || null, anchor: anchor.clone(), count: r.count, seed: n });
     if (r.gag === 'launch') {
       const T = live(r.prop, P, k.lift);
       if (T) { T.launch = [k.lift, k.gone]; T.gone = k.gone; }
@@ -105,7 +106,8 @@ export function makeWorld(ctx) {
     if (r.react) reacts.push({ place: P, from: Math.min(...Object.values(k), r.t0 + 0.3), focus: (anchor || anchorW(P, 'you')).clone() });
   });
   function stack(place, I) { (piles[place] ||= []).push(I); I.pile = place; I.capH = I.capH || PILE_CAP; if (PILE_SCALE[I.name]) I.capS = PILE_SCALE[I.name]; }
-  function tgtPos(T) { const g = T.p ? T.p.g : null; return g ? g.position.clone() : T.pos ? T.pos.clone() : null; }
+  // where a prop stands (its group sits at the origin until the first draw; a sailed prop's moves are copied with it)
+  function tgtPos(T) { return T.pos ? T.pos.clone() : null; }
 
   function hideParisTower() {
     const root = sets.paris.root, box = new THREE.Box3(), c = new THREE.Vector3(), sz = new THREE.Vector3();
@@ -144,19 +146,25 @@ export function makeWorld(ctx) {
     if (I.pop !== undefined) s *= boingK((t - I.pop) / 0.35);
     return s;
   }
+  // pure: the camera calls it too (focusOf), so the prop's own motion lives in animProp
   function posOf(I, t, place) {
-    const g = I.p.g, mv = [...I.moves].reverse().find((m) => t >= m.t);
+    const mv = [...I.moves].reverse().find((m) => t >= m.t);
     let p = I.pos ? I.pos.clone() : new THREE.Vector3();
     if (I.follow) p = ctx.castSpot(I.follow, place, t);
-    if (mv) { const u = easeIO((t - mv.go[0]) / (mv.go[1] - mv.go[0])); p = mv.path[0].clone().lerp(mv.path[1], u); p.y += 0.08 * Math.sin(t * 3.1); g.rotation.z = 0.05 * Math.sin(t * 2.3); g.rotation.y = -Math.PI / 2; }
-    else if (I.name === 'boat') g.rotation.z = 0.035 * Math.sin(t * 1.7);
+    if (mv) { const u = easeIO((t - mv.go[0]) / (mv.go[1] - mv.go[0])); p = mv.path[0].clone().lerp(mv.path[1], u); p.y += 0.08 * Math.sin(t * 3.1); }
     if (I.onTable && t >= builtin.table.gone) p.y = builtin.table.after ?? 0;
     if (I.pile) p.y += pileOffset(I, t);
     if (I.fall) { const u = clamp((t - I.fall[0]) / (I.fall[1] - I.fall[0])); p.y += DROP_H * (1 - u * u); }
     for (const D of pileDrops) if (I.pile === D.place && t >= D.from) { const u = clamp((t - D.from) / (D.to - D.from)); p.x = D.target.x; p.z = D.target.z; p.y = D.target.y + pileOffset(I, t) + DROP_H * (1 - u * u); }
-    if (I.walk) { const w = Math.max(0, t - I.walk[1]); p.x += 2.2 * w; if (I.p.setLegs) I.p.setLegs(smooth((t - I.walk[0] + 0.4) / 0.7), w * 1.4); }   // slow enough to watch it go
+    if (I.walk) p.x += 2.2 * Math.max(0, t - I.walk[1]);   // slow enough to watch it go
     if (I.launch) { const u = clamp((t - I.launch[0]) / (I.launch[1] - I.launch[0])); p.y += 140 * u * u; }
     return p;
+  }
+  function animProp(I, t) {   // a sailing prop rocks and faces its way, a parked boat bobs, a walking building strides
+    const g = I.p.g, mv = [...I.moves].reverse().find((m) => t >= m.t);
+    if (mv) { g.rotation.z = 0.05 * Math.sin(t * 2.3); g.rotation.y = -Math.PI / 2; }
+    else if (I.name === 'boat') g.rotation.z = 0.035 * Math.sin(t * 1.7);
+    if (I.walk && I.p.setLegs) I.p.setLegs(smooth((t - I.walk[0] + 0.4) / 0.7), Math.max(0, t - I.walk[1]) * 1.4);
   }
 
   // ------------------------------------------------------------ per frame
@@ -168,7 +176,7 @@ export function makeWorld(ctx) {
       I.p.g.visible = here;
       if (!here) continue;
       const g = I.p.g, s = scaleOf(I, t);
-      g.position.copy(posOf(I, t, place)); g.scale.setScalar(Math.max(0.001, s));
+      g.position.copy(posOf(I, t, place)); animProp(I, t); g.scale.setScalar(Math.max(0.001, s));
       if (I.yaw !== undefined) g.rotation.y = I.yaw;
       if (I.follow) g.rotation.y = ctx.castYaw(I.follow, place, t);
       if (I.fall && t >= I.fall[1] && t < I.fall[1] + 0.25) { const k = 1 - (t - I.fall[1]) / 0.25; g.scale.set(s * (1 + 0.15 * k), s * (1 - 0.15 * k), s * (1 + 0.15 * k)); }
@@ -252,8 +260,8 @@ export function makeWorld(ctx) {
         return { pos: base.add(new THREE.Vector3(0, clamp(top * 0.5, 1, 7), 0)), size: Math.max(2.5, Math.min(top, 14)) };
       }
       if (T && T.p.g.visible) { const s = scaleOf(T, t), h = T.walk ? 11 : T.p.h * s; const p = posOf(T, Math.min(t, T.gone - 0.01, T.walk ? T.walk[1] : Infinity), place); if (T.fall && t < T.fall[1]) p.y = T.pos.y; return { pos: p.add(new THREE.Vector3(0, clamp(h * 0.5, 1.0, 6), 0)), size: Math.max(1.6, Math.min(T.walk ? 12 : Math.max(h, T.span * s * 0.7), 14)) }; }
-      if (r.prop === 'pile' || r.anchor === 'pile') { const top = (piles[place] || []).filter((I) => I.born <= t).reduce((s2, I) => s2 + sizeOf(I) * 0.92, 0); const base = r.anchor ? anchorW(place, r.anchor) : anchorW(place, 'pile'); return { pos: base.add(new THREE.Vector3(0, Math.min(top * 0.5, 6), 0)), size: Math.max(2.5, Math.min(top, 14)) }; }
-      if (r.gag === 'flood' && REGIONS[place][r.anchor] && !REGIONS[place][r.anchor].sphere) { const g = REGIONS[place][r.anchor]; return { pos: W(place, [(g.x0 + g.x1) / 2, g.y + 0.8, (g.z0 + g.z1) / 2]), size: Math.max(g.x1 - g.x0, g.z1 - g.z0) * 0.6 }; }
+      const g = (REGIONS[place] || {})[r.anchor];
+      if (r.gag === 'flood' && g && !g.sphere) return { pos: W(place, [(g.x0 + g.x1) / 2, g.y + 0.8, (g.z0 + g.z1) / 2]), size: Math.max(g.x1 - g.x0, g.z1 - g.z0) * 0.6 };
       const a = r.anchor ? anchorW(place, r.anchor) : anchorW(place, 'you');
       return { pos: a.add(new THREE.Vector3(0, 1, 0)), size: 2 };
     },

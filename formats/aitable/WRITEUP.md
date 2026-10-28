@@ -46,7 +46,7 @@ episode.json ──► tools/ladder.py ──► story.json (text, HUD, absolute
   `story.json`. The template animates to those numbers and `cues.json` puts the foley on the same numbers, so sound
   can't drift from picture.
 - **Props persist.** A prop created on one rung stays in the world. The table that became a boat sails down the street
-  two rungs later with the players on board, and gg005's pile grows from a car to the moon. This is what makes the
+  on the next rung with the players on board, and gg005's street pile grows from the casino to the moon. This is what makes the
   escalation read as one story.
 - **Where AI is used.** Claude Code wrote the template, the gag library and the props. It also wrote the three
   `episode.json` scripts and captions and reviewed every contact sheet of stills. I directed it, rejected the first
@@ -64,16 +64,22 @@ episode.json ──► tools/ladder.py ──► story.json (text, HUD, absolute
 Cheapest first. Each layer caught real problems during this build.
 
 1. **Validation, before anything renders (0.06 s).** `ladder.py` rejects an episode and lists every problem it finds:
-   - **Shapes and names:** unknown place, gag, prop or camera; an anchor that isn't in that place; a count that isn't a
-     whole number; a scale outside 1.5–40.
-   - **Continuity:** you can't transform, grow or walk off a prop that isn't on screen yet; you can't drop a pile that
-     doesn't exist; a launched prop can't "land" on an anchor no later rung visits.
+   - **Shapes and names:** a list or number where a name belongs, an unknown place, gag, prop or camera, an anchor that
+     isn't in that place, a count that isn't a whole number, a scale outside 1.5–40, a color that isn't `#rrggbb`.
+   - **Continuity:** you can't transform or grow a prop that isn't on screen (including one that already walked off or
+     launched); you can't drop a pile that doesn't exist; a launched prop can't "land" on an anchor no later rung visits.
+   - **What the template can show:** the cast can only be transformed, once each; rain is chips and floods are sheep,
+     only on a floor the template knows; the casino's own table and chips can only be transformed; extras can only
+     react where there are extras.
    - **Text and shape:** a bubble over 24 characters, text that reads faster than 0.3 s per word, a counter that goes
      down, a length outside 30–40 s.
    - **Caption:** missing its CTA, its "Send this to…" line, or exactly 5 hashtags with #animation.
 
-   Every rule has a unit test: 52 tests across both formats (`python3 -I -m unittest discover -s tests`). One of them
-   fails if the JavaScript template and the Python validator ever disagree on a prop or anchor name.
+   Every rule has a unit test: 65 tests across both formats (`python3 -I -m unittest discover -s tests`), and the suite
+   triggers all 48 messages the ladder validator can give. Cross-file tests fail if the JavaScript template and the
+   Python validator disagree on a prop, anchor, place, camera, flood floor or extras place. An independent review of
+   the finished branch found episodes that validated but crashed or misrendered the template (a sheep flood in the
+   press room, a casino transformed after it walked away). Each became a rule, test-first.
 2. **Framing self-check (every stills or render run).** The template poses every key moment and projects each subject,
    head and speech bubble through that shot's camera. It warns when one lands off-frame or under the HUD. In gg006 it
    flagged the "8 billion sheep" bubble outside the frame: the camera had been placed inside Earth.
@@ -90,6 +96,8 @@ Cheapest first. Each layer caught real problems during this build.
 5. **After the render.** An `ffprobe` spec check (1080×1920, 30 fps, H.264 + AAC, duration as planned, < 100 MB) and a
    1-fps frame scan for any stretch with no motion. The scan of gg004 showed held seconds after the aces, the gold tower
    and the boat. Since then the AI points while it lies and hop-laughs when a lie lands, and the parked boat rocks.
+   Stills and a 1-fps scan can't show a motion bug: the review found that the walking casino's legs never strode (a
+   camera call reset them every frame). It was fixed, and a 4-fps strip of each gag's window is now part of the check.
 6. **A human watches before posting.** At 100 videos: every flagged episode plus a random 10 %.
 
 ## How failures are handled
@@ -119,7 +127,7 @@ same policy automatically.
    three finished episodes as examples. `ladder.py` validates it, and the AI retries on errors (above).
 3. **Production.** `ladder.py` → `synth.py` → stills plus AI sheet review → full render → spec check plus motion scan.
    In this build I ran these by hand. Chaining them into one unattended runner is the first thing on the next-steps list.
-   Measured on a 16 GB M5 Mac: **a full render takes 114–149 s per 36–37 s episode**, audio about 5 s, validation
+   Measured on a 16 GB M5 Mac: **a full render takes 113–149 s per 36–37 s episode**, audio about 5 s, validation
    0.06 s. With a stills sheet and its review on top, that's 100 episodes in roughly 4–5 hours on one laptop, and renders
    split across machines because each one depends only on its JSON.
 4. **Growth.** New premises mostly reuse gags and places. When one needs something new (a Catan board, a robber, a
@@ -132,8 +140,8 @@ same policy automatically.
 
 | | gg004 | gg005 | gg006 |
 |---|---|---|---|
-| Length / size | 36.3 s / 26.0 MB | 36.1 s / 25.3 MB | 36.9 s / 25.6 MB |
-| Full render (1080×1920, 30 fps) | 124 s | 149 s | 114 s |
+| Length / size | 36.3 s / 25.9 MB | 36.1 s / 25.3 MB | 36.9 s / 25.6 MB |
+| Full render (1080×1920, 30 fps) | 113 s | 149 s | 114 s |
 | Loudness, music dropouts | −15.01 LUFS, none | −15.02 LUFS, none | −15.0 LUFS, none |
 
 ## What I'd add next

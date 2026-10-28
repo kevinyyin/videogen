@@ -19,6 +19,7 @@ episode.json (formats/ladder/README.md has the full reference):
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 
@@ -41,14 +42,19 @@ PROPS = ("five_aces", "gold_chips", "chips", "table", "boat", "chicken", "casino
 CAST = ("you", "ai")
 BUILTINS = {"casino": {"table", "chips"}}      # set dressing that is on screen from the start
 CAMS_ANY = ("wide", "close", "high", "ai", "you", "orbit")
+# what the template can draw (formats/ladder/: gags.js REGIONS, shots.js extraSpots, the rain/sheep pools)
+FLOOD_AT = {"livingroom": ["table", "room"], "street": ["road", "pile"], "paris": ["lawn", "tower"], "casino": ["table"],
+            "space": ["earth"]}
+REACT_PLACES = ("casino", "street", "paris", "podium")
+GAG_PROPS = {"rain": ("chips",), "flood": ("sheep",)}
 COMMON = {"place", "gag", "say", "sub", "hud", "react", "cam", "len"}
 # per gag: minimum length, required + optional params, key moments (offsets from the rung start)
 GAGS = {
-    "say":       {"min": 2.6, "req": [], "opt": [], "at": {}},
+    "say":       {"min": 2.6, "req": ["say"], "opt": [], "at": {}},
     "poof":      {"min": 3.0, "req": ["prop", "at"], "opt": [], "at": {"pop": 0.9}},
     "transform": {"min": 3.2, "req": ["prop", "to"], "opt": ["at", "scale", "riders"], "at": {"puff": 1.0}},
     "drop":      {"min": 3.4, "req": ["prop", "at"], "opt": [], "at": {"fall": 0.6, "impact": 1.2}},
-    "grow":      {"min": 3.2, "req": ["prop", "scale"], "opt": [], "at": {"grow0": 0.8, "grow1": 2.0}},
+    "grow":      {"min": 3.2, "req": ["prop", "scale"], "opt": ["at"], "at": {"grow0": 0.8, "grow1": 2.0}},
     "walkoff":   {"min": 3.6, "req": ["prop", "at"], "opt": [], "at": {"stand": 0.8, "walk0": 1.2, "walk1": 3.4}},
     "sail":      {"min": 3.4, "req": ["prop", "at"], "opt": ["riders"], "at": {"go0": 0.6, "go1": 3.2}},
     "rain":      {"min": 3.4, "req": ["prop", "count"], "opt": ["at"], "at": {"fall0": 0.6, "fall1": 2.6}},
@@ -60,7 +66,11 @@ ALL_ANCHORS = {a for v in PLACES.values() for a in v}
 
 
 def gag_min(r):
-    return GAGS[r["gag"]]["min"] + (SCALE_GROW[0] if r["gag"] == "transform" and "scale" in r else 0)
+    return round(GAGS[r["gag"]]["min"] + (SCALE_GROW[0] if r["gag"] == "transform" and "scale" in r else 0), 3)
+
+
+def is_color(v):
+    return isinstance(v, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", v) is not None
 
 
 def offsets(r):
@@ -99,18 +109,23 @@ def layout(ep):
 
 def validate(ep):
     """Every problem with a ladder episode, as messages: shapes first, then what must be on screen when, then timing."""
+    if not isinstance(ep, dict): return ["episode: must be a JSON object"]
     errs = []
     cast = ep.get("cast")
     if not (isinstance(cast, dict) and isinstance(cast.get("you"), dict) and isinstance(cast.get("ai"), dict)):
         return ["cast: must be {\"you\": {\"top\": …}, \"ai\": {\"name\": …, \"color\": …}}"]
-    if not cast["you"].get("top"): errs.append("cast: you needs a top color")
-    if not cast["ai"].get("color"): errs.append("cast: ai needs a color")
+    if not is_color(cast["you"].get("top")): errs.append("cast: you top must be a color like #3aa7d9")
+    if not is_color(cast["ai"].get("color")): errs.append("cast: ai color must be a color like #7b5cff")
     if not isinstance(cast["ai"].get("name"), str) or not 1 <= len(cast["ai"]["name"]) <= 10: errs.append("cast: ai name must be 1–10 chars")
     hud = ep.get("hud")
-    if not isinstance(hud, dict) or not isinstance(hud.get("label"), str) or not 1 <= len(plain(hud["label"])) <= 24:
+    if not isinstance(hud, dict) or not isinstance(hud.get("label"), str) or not 1 <= len(plain(hud["label"])) <= 24 \
+            or not isinstance(hud.get("prefix", ""), str):
         errs.append("hud: needs a label of 1–24 chars (and an optional prefix)")
-    if not ep.get("title"): errs.append("missing 'title'")
-    if not isinstance(ep.get("end"), dict) or not ep["end"].get("html"): errs.append("end: needs {\"html\": …, \"small\": …}")
+    if not isinstance(ep.get("title"), str) or not plain(ep["title"]).strip(): errs.append("title: needs the question as text")
+    end = ep.get("end")
+    if not isinstance(end, dict) or not isinstance(end.get("html"), str) or not end["html"].strip() or not isinstance(end.get("small", ""), str):
+        errs.append("end: needs {\"html\": …, \"small\": …}")
+    if not (isinstance(ep.get("seed"), int) and not isinstance(ep["seed"], bool)): errs.append("seed: must be a whole number")
     errs += caption_errors(ep.get("caption"))
     rungs = ep.get("rungs")
     if not isinstance(rungs, list) or not all(isinstance(r, dict) for r in rungs):
@@ -121,10 +136,15 @@ def validate(ep):
     # props on screen per place: built-ins + pre-placed (named by a walkoff/launch/grow there); the cast is everywhere
     present = {p: set(BUILTINS.get(p, ())) for p in PLACES}
     for r in rungs:
-        if r.get("place") in PLACES and r.get("gag") in ("walkoff", "launch", "grow") and r.get("prop") in PROPS:
+        if isinstance(r.get("place"), str) and r["place"] in PLACES and r.get("gag") in ("walkoff", "launch", "grow") and r.get("prop") in PROPS:
             present[r["place"]].add(r["prop"])
     pile = {p: 0 for p in PLACES}
+    orig = {p: set(v) for p, v in BUILTINS.items()}   # a place's own props, until a rung makes a new one of that name
+    made, transformed = set(), set()
     for n, r in enumerate(rungs, 1):
+        bad = [k for k in ("place", "gag", "prop", "to", "at", "lands", "cam") if k in r and not isinstance(r[k], str)]
+        for k in bad: errs.append(f"rung {n}: {k} must be a name (text)")
+        if bad: structural = True; continue
         place, gag = r.get("place"), r.get("gag")
         if place not in PLACES: errs.append(f"rung {n}: unknown place '{place}' (one of {', '.join(PLACES)})"); structural = True; continue
         if gag not in GAGS: errs.append(f"rung {n}: unknown gag '{gag}' (one of {', '.join(GAGS)})"); structural = True; continue
@@ -137,6 +157,14 @@ def validate(ep):
         for k in ("prop", "to"):
             if k in r and r[k] not in PROPS and not (k == "prop" and gag == "drop" and r[k] == "pile"):
                 errs.append(f"rung {n}: unknown prop '{r[k]}' (not on the shelf)"); structural = True
+        if prop in CAST and gag != "transform": errs.append(f"rung {n}: '{prop}' can only be transformed (other gags take a prop from the shelf)")
+        if r.get("to") in CAST: errs.append(f"rung {n}: can't transform into '{r['to']}'")
+        if gag in GAG_PROPS and prop in PROPS and prop not in GAG_PROPS[gag]:
+            errs.append(f"rung {n}: {gag} only {'rains' if gag == 'rain' else 'floods'} {', '.join(GAG_PROPS[gag])}")
+        if gag == "flood" and r.get("at") in PLACES[place] and r["at"] not in FLOOD_AT.get(place, ()):
+            errs.append(f"rung {n}: sheep can't flood '{r['at']}' in {place} ({', '.join(FLOOD_AT.get(place, [])) or 'nothing there to fill'})")
+        if r.get("react") is True and place not in REACT_PLACES:
+            errs.append(f"rung {n}: react needs extras, and {place} has none ({', '.join(REACT_PLACES)} do)")
         if "at" in r and r["at"] not in PLACES[place]: errs.append(f"rung {n}: anchor '{r['at']}' is not in {place} ({', '.join(PLACES[place])})"); structural = True
         if "lands" in r and r["lands"] not in ALL_ANCHORS: errs.append(f"rung {n}: lands on unknown anchor '{r['lands']}'"); structural = True
         if "count" in r and not (isinstance(r["count"], int) and not isinstance(r["count"], bool) and r["count"] > 0):
@@ -167,6 +195,17 @@ def validate(ep):
         # what is on screen when
         if gag in ("transform", "grow") and prop not in CAST and prop not in present[place]:
             errs.append(f"rung {n}: '{prop}' is not on screen in {place} yet (create it in an earlier rung there)")
+        # a sail fetches the newest one anywhere: a place's own prop only if no rung ever made another
+        own = {x for v in orig.values() for x in v} - made if gag == "sail" else orig.get(place, set())
+        if gag in ("grow", "walkoff", "launch", "sail") and prop in own:
+            home = next(p for p, v in orig.items() if prop in v)
+            errs.append(f"rung {n}: the {home}'s own '{prop}' can only be transformed (poof a new one first)")
+        if gag == "grow" and "at" not in r and prop not in CAST and not any(
+                x.get("place") == place and x.get("gag") != "say" and prop in (x.get("prop"), x.get("to")) for x in rungs[:n - 1]):
+            errs.append(f"rung {n}: grow needs 'at' for a '{prop}' no earlier rung made in {place} (where it stands)")
+        if gag == "transform" and prop in CAST:
+            if prop in transformed: errs.append(f"rung {n}: '{prop}' was already transformed (it stays that way)")
+            transformed.add(prop)
         if gag == "sail" and prop not in CAST and not any(prop in s for s in present.values()):
             errs.append(f"rung {n}: '{prop}' is not on screen anywhere yet")
         if gag == "drop" and prop == "pile" and pile[place] == 0:
@@ -174,10 +213,12 @@ def validate(ep):
         if gag == "launch" and "lands" in r and not any(r["lands"] in PLACES[x.get("place")] for x in rungs[n:] if x.get("place") in PLACES):
             errs.append(f"rung {n}: lands on '{r['lands']}' but no later rung is in a place with that anchor")
         # update the world
-        if gag in ("poof", "drop", "rain", "flood") and prop != "pile": present[place].add(prop)
+        if gag in ("poof", "drop", "rain", "flood") and prop != "pile":
+            present[place].add(prop); made.add(prop); orig.get(place, set()).discard(prop)
         if gag in ("poof", "drop") and r.get("at") == "pile" and prop != "pile": pile[place] += 1
         if gag == "transform":
-            present[place].discard(prop); present[place].add(r["to"])
+            present[place].discard(prop); present[place].add(r["to"]); made.add(r["to"]); orig.get(place, set()).discard(prop)
+        if gag == "walkoff": present[place].discard(prop)
         if gag == "sail":
             for s in present.values(): s.discard(prop)
             present[place].add(prop)
