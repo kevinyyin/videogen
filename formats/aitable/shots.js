@@ -13,7 +13,7 @@ import { K, clamp, lerp, faceToward, rng, canvasTex } from '@engine/core.js';
 import { makePerson, applyPose, basePose } from '@engine/rig.js';
 import { makeSpeechBubble } from '@engine/props.js';
 import { buildCasino } from '@engine/sets/casino.js';
-import { FIG_S, FELT_Y, SEATS, makeRobot } from './pieces.js';
+import { FIG_S, FELT_Y, SEATS, makeRobot, makeChips, chipStackY, makeCard, makeGiantHand, makeCaptcha } from './pieces.js';
 
 const CAM_OF = { deal: 'wide', tower: 'tiltUp', peek: 'overShoulder', flip: 'hero', handshake: 'twoShot', wall: 'high', kick: 'wide', captcha: 'high', flick: 'wide' };
 const HEAD_UP = 0.13 * FIG_S;   // headG -> head center (robot box / human sphere), world meters
@@ -141,8 +141,52 @@ export async function build(studio, story) {
   const beatAt = (t) => { for (let i = beats.length - 1; i >= 0; i--) if (t >= beats[i].t0) return i; return -1; };
   const faceAt = (id, t) => { let e = 'neutral'; for (const b of beats) if (t >= b.t0 && b.face && b.face[id]) e = b.face[id]; return e; };
 
+  // ---------------------------------------------------------------- lineup (t >= 200: --stills 200,201,202,203,204)
+  const LX = -0.75;   // a clear patch of felt behind the action
+  let lineup = null;
+  function buildLineup() {
+    const root = new THREE.Group(); scene.add(root);
+    const robots = [0, 1, 2, 3].map(() => { const r = makeRobot({ color: '#7b5cff' }); r.rig.root.scale.setScalar(FIG_S); root.add(r.rig.root); return r; });
+    const hands = ['rest', 'pinch', 'flat', 'point', 'flick'].map((n) => { const h = makeGiantHand(); h.pose(n, 1); root.add(h.g); return h; });
+    const cards = ['As', '7c', '2d', null].map((c) => { const k = makeCard(); k.setFace(c); root.add(k.g); return k; });
+    const chips = makeChips(root, 200);
+    const cap = makeCaptcha('SELECT ALL THE ACES'); root.add(cap.g); cap.setLit([1, 0, 0, 0, 1, 1, 0, 0, 1]);
+    return { root, robots, hands, cards, chips, cap };
+  }
+  function showLineup(t) {
+    lineup ||= buildLineup();
+    const L = lineup, f = Math.floor(t) - 200;
+    document.getElementById('ui').style.display = 'none';
+    ids.forEach((id) => (cast[id].rig.root.visible = false));
+    L.root.visible = true;
+    L.robots.forEach((r) => (r.rig.root.visible = false)); L.hands.forEach((h) => (h.g.visible = false)); L.cards.forEach((k) => (k.g.visible = false));
+    L.cap.g.visible = false; L.chips.begin();
+    let p, a, fov = 30;
+    if (f === 0 || f === 4) {
+      const ex = f === 0 ? ['neutral', 'smug', 'shifty', 'suspicious'] : ['laugh', 'cry', 'glitch', 'TEXT:BOT DETECTED'];
+      L.robots.forEach((r, i) => { r.setFace(ex[i]); applyPose(r.rig, Object.assign(basePose(), { x: LX, z: -0.039 + i * 0.026, rotY: Math.PI / 2 })); r.rig.root.position.y = FELT_Y; r.rig.root.visible = true; });
+      p = [LX + 0.32, FELT_Y + 0.07, 0]; a = [LX, FELT_Y + 0.065, 0];
+    } else if (f === 1) {
+      L.hands.forEach((h, i) => { h.g.position.set(LX, FELT_Y + 0.04, -0.22 + i * 0.11); h.g.rotation.set(0, -Math.PI / 2, 0); h.g.visible = true; });   // fingers -> -x, backs up
+      p = [LX + 0.55, FELT_Y + 1.1, 0]; a = [LX - 0.08, FELT_Y, 0]; fov = 32;
+    } else if (f === 2) {
+      L.cards.forEach((k, i) => { k.g.position.set(LX, FELT_Y + 0.05 + Math.floor(i / 2) * 0.1, -0.04 + (i % 2) * 0.08); k.g.rotation.set(-Math.PI / 2, Math.PI / 2, 0, 'YXZ'); k.g.visible = true; });
+      p = [LX + 0.6, FELT_Y + 0.1, 0]; a = [LX, FELT_Y + 0.1, 0];
+    } else {
+      for (let k = 0; k < 40; k++) L.chips.add(LX + 0.06, chipStackY(k), 0.11, 0, 0, k >> 3);
+      L.cap.g.position.set(LX - 0.06, FELT_Y, -0.02); L.cap.g.rotation.set(0, Math.PI / 2, 0); L.cap.g.visible = true;
+      p = [LX + 0.42, FELT_Y + 0.5, 0.03]; a = [LX - 0.03, FELT_Y + 0.02, 0.03]; fov = 40;
+    }
+    L.chips.end();
+    setCamera(p, a, fov, 0, 0); camera.updateMatrixWorld();
+    bokeh.uniforms.focus.value = camera.position.distanceTo(_v.fromArray(a));
+    sun.target.position.set(a[0], FELT_Y, a[2]); sun.position.copy(sun.target.position).add(_v.set(0.12, 0.45, 0.3));
+  }
+
   let shot = null;
   function update(t) {
+    if (t >= 200) return showLineup(t);
+    if (lineup) { lineup.root.visible = false; document.getElementById('ui').style.display = ''; }
     casino.update(t);
     for (const id of ids) { pose(id, {}, t); cast[id].setFace(faceAt(id, t)); }
     const i = beatAt(t), b = i >= 0 ? beats[i] : null;
