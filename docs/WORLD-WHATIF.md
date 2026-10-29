@@ -2,6 +2,7 @@
 
 For big, general thought experiments about the whole world ("What if every nuclear weapon disappeared?", "What if the
 internet went down for a year?", "What if every country had the same army?"). Reference build: `videos/005-no-nukes/`.
+Same engine, same text kit, same house rules as the emotional format (docs/FORMAT.md). What changes:
 
 | | Emotional (`001`) | **World what-if (`005`)** |
 |---|---|---|

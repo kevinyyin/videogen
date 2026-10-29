@@ -13,6 +13,7 @@ node tools/render.mjs ggNNN-slug                                           # fin
 `aitable.py` exits non-zero and lists every problem if the episode breaks a rule. `render.mjs` prints
 `⚠️ frame: …` for any key moment where a subject is off-frame, under the HUD, or in the subtitle band while a subtitle shows.
 
+Code: `shots.js` (the template, cameras and
 choreography), `pieces.js` (the robot, chips, cards, giant hand and CAPTCHA), `tools/aitable.py` (timeline and validation).
 
 ## episode.json
@@ -88,5 +89,6 @@ Faces change at the beat's start, except at the reveal for `flip` (at the flip) 
 - **Motion at this scale is tiny.** A laugh needs a hop and flailing arms, and the high camera needs a 22 % push-in. Scan
   every render at 1 fps.
 - **Never put code after a `//` comment on the same line.** A scripted edit commented out `d.updateMatrix()` and every
+  chip rendered at the origin. After scripted edits, grep for code that follows a `//` on the same line.
 - **`tools/render.mjs` used to drop `console.warn`.** Puppeteer calls the type `'warn'`, not `'warning'`. Fixed; the framing
   check is only useful because of it.

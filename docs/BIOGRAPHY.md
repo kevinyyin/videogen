@@ -2,6 +2,8 @@
 
 A narrated life, birth → death, in one continuous reel. Its own category inside EDStudio (user, Oct 23 2026): it is **not** a
 what-if sim and not a family tear-jerker, so it has its own rules, tool and workflow. Reference: `videos/009-abe-lincoln`.
+Build it with `python3 -I tools/biography.py <slug>` (a narration beat table in `script.json` → `story.json`), then
+stills, audio and render as for any video.
 
 ## What makes it different from the other tones
 | | other tones | biography |
@@ -53,6 +55,7 @@ edit script.json and re-run. Give big moments `extra` (death, the speech, the le
 ## 4. Sets, cast, aging
 - One location per scene; a new look per era (night snow, summer woods, autumn grave, sunset river, candlelight, flags,
   dusk battlefield, theatre, marble). Build new sets as builders returning their own `root`, park them at offsets
+  (montage technique: one visible root per shot). 009's `engine/sets/frontier.js` + `capital.js` cover 1800s America.
 - Separate rigs per age: kid (`headR 0.17`, scale 0.62) → teen (0.86) → adult (1.08–1.1). Wardrobe per era.
 - A signature feature that arrives on screen (`makePerson({beard})`, grow `head.beard.scale` 0.62 → 1) and a signature
   prop (top hat) that pays off at the end (left on the empty chair).

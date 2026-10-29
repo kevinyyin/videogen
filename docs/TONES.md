@@ -2,6 +2,7 @@
 
 Every video declares its tone in `story.json` → `"tone": "emotional" | "funny" | "world" | "montage"`. Both tones use the same engine,
 the same text kit (centered serif question, small top-left HUD, italic subtitles with shadow + backdrop) and the
+same house rules (docs/FORMAT.md). What changes is the **story shape, the timing, the acting, the music and the ending**.
 
 | | **Emotional** (`videos/001-bedroom-door`) | **Funny** (`videos/002-everyone-pregnant`) |
 |---|---|---|
@@ -72,6 +73,8 @@ different places instead of hovering around one scene**: every beat = a new loca
 - End on a human-scale button that undercuts the grandeur (+20 years… "Almost." — a genius loses to a fitted sheet), then a comment-bait
   question card ("What would you invent first?").
 - Sound: its own identity — synth plucks + echo, a scene-specific bed per beat, synced foley (see audio/README.md → Sound identity).
+- Multi-set technique: build several sets in one scene, park each set's `root` at its own offset and show only that root
+  per shot (hidden roots also switch off their lights). Reuse every set in `engine/sets/`.
 - **Funny montage (008, search history over every head):** the premise is a visible prop (a search card per head), and each
   place gets ONE card that is the punch line (Gary's pigeon searches, "what does GDP stand for" ×5, the surgeon's spleen
   search). The subtitle sets it up, the card delivers. HUD number = the social cost (PEOPLE MAKING EYE CONTACT 8.2 B → 0 → 8.2 B),
@@ -109,7 +112,7 @@ Reference: `docs/reference/simplysimulated.md` (841K likes). Not every video has
    ("Would humanity survive the *first year*?"). Keep it non-graphic: wrecks, glows, crowds — no bodies, no blood.
 
 ## Biography: one real life, birth → death (`"tone": "biography"`, `videos/009-abe-lincoln`)
-**Its own category with its own playbook: `docs/BIOGRAPHY.md`** and command `/new-biography <name>`. In short: a narrator
+**Its own category with its own playbook: `docs/BIOGRAPHY.md`**. In short: a narrator
 tells the story in full connected sentences (never fragments — user steer on 009 v1), `tools/biography.py` sizes every shot
 from its narration, HUD = age + date + place, a new set per era, a clear but non-graphic death beat, a legacy ending and a
 "Whose story should we tell next?" end card. Length follows the life (009 = 2:19).

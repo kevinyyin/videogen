@@ -37,6 +37,7 @@ Comments = people crying + tagging family. **Shareability ("send this to your mo
    user found dense/bright SFX harsh. No ticks, whooshes or chimes. Music swells at the reveal. No voiceover.
 8. **End card:** fully readable for ≥ 3.5 s before the video ends (user feedback — 001's was too short).
 9. **Caption:** hook + emoji / 2–3 sentence summary / question CTA + 👇 / "Send this to your ___" / blank line / exactly 5 hashtags incl. #animation.
+   No promo/course line (`tools/caption.py` rejects one).
 10. **Cadence:** 1–2 posts per day. Post a "part 2" only for concepts that clearly overperform.
 
 ## Originality rule
