@@ -48,11 +48,12 @@ episode.json ──► tools/ladder.py ──► story.json (text, HUD, absolute
 - **Props persist.** A prop created on one rung stays in the world. The table that became a boat sails down the street
   on the next rung with the players on board, and gg005's street pile grows from the casino to the moon. This is what makes the
   escalation read as one story.
-- **A small creative input, checked by code.** The only per-video creative input is a ~20-line `episode.json`, and
-  the validator checks it before anything renders. Timing, audio synthesis, rendering and encoding are deterministic
-  code. That split is what makes the output repeatable: the part that changes per video is small and checked, and
-  everything that has to come out right every time is code that has already been tested. It is also what would let a
-  language model write episodes reliably (see "How I would automate 100 videos").
+- **Where AI is used.** Claude Code wrote the template, the gag library and the props. It also wrote the three
+  `episode.json` scripts and captions and reviewed every contact sheet of stills. I directed it, rejected the first
+  format, chose the concepts and approved each stage (spec → plan → build). Timing, audio synthesis, rendering and
+  encoding are deterministic code. That split answers "getting AI to do creative work repeatedly and reliably": the AI's
+  creative output is a small JSON the validator checks, and everything that has to come out right every time is code
+  that's already been checked.
 - **Engine credit.** The Three.js engine, renderer, audio synth and QC tools are **EDStudio** by Dylan Nguyen (PolyForm
   Noncommercial), imported unchanged in the repo's first commit. Everything after it is this project: `formats/ladder/`,
   `formats/aitable/`, `tools/ladder.py`, `tools/aitable.py`, `tests/`, `videos/gg*`, new synth voices (poof, chicken,
@@ -82,7 +83,7 @@ Cheapest first. Each layer caught real problems during this build.
 2. **Framing self-check (every stills or render run).** The template poses every key moment and projects each subject,
    head and speech bubble through that shot's camera. It warns when one lands off-frame or under the HUD. In gg006 it
    flagged the "8 billion sheep" bubble outside the frame: the camera had been placed inside Earth.
-3. **Stills contact sheet (seconds).** Key-moment frames are tiled into one image (`tools/sheet.mjs`) and reviewed against a
+3. **Stills contact sheet (seconds).** Key-moment frames are tiled into one image that the AI reviews against a
    checklist: subject in frame, text readable and off faces, props legible, nothing clipping. This caught what no rule
    would:
    - a black sky in Paris (a filter hid the sky dome);
@@ -107,8 +108,7 @@ same policy automatically.
 - **Renders are deterministic** (seeded randomness, no clock), so any failure reproduces from the same JSON on any
   machine: same timing, same placement, same bit-identical audio. Pixels vary invisibly between GPU/encoder runs
   (a re-render of gg006 matched the original at 42.8 dB PSNR).
-- **A validation error goes back to the episode's writer with the exact message.** In the automated runner the writer
-  is the model: up to 3 retries, then the video goes to a human.
+- **A validation error goes back to the AI with the exact message.** Up to 3 retries, then the video goes to a human.
   A script that breaks any rule the validator knows never reaches the renderer.
 - **A failed stills review is fixed at the cheapest level that works.** Episode data comes first: a `"cam": "wide"`
   override fixed three blocked shots in gg004 and gg006. A template fix comes next, when the same gag or place fails
@@ -116,16 +116,16 @@ same policy automatically.
   episode is re-rendered. Rendering is cheap, so this is the normal path.
 - **A render timeout** (the page never becomes ready) is retried once, then flagged. In this engine it almost always means
   an infinite loop at build time.
-- **Every lesson gets written down** in the format's README (`formats/ladder/README.md`, Lessons), so the next
-  run doesn't hit it again.
+- **Every lesson gets written down** in the format's README (`formats/ladder/README.md`, Lessons), so the next run, by me or an AI,
+  doesn't hit it again.
 
 ## How I would automate 100 videos
 
-1. **Premises.** A language model brainstorms 150+ escalation premises from the site's games (bluffs, raises, trades, the robber,
+1. **Premises.** An AI brainstorms 150+ escalation premises from the site's games (bluffs, raises, trades, the robber,
    alliances, an AI that never folds), dedupes them against what's been posted, and a human approves a batch of 100.
-2. **Scripts.** For each premise, the model writes `episode.json` from a prompt holding the gag/place/prop reference and the
-   three finished episodes as examples. `ladder.py` validates it, and the model retries on errors (above).
-3. **Production.** `ladder.py` → `synth.py` → stills plus a model review of the sheet → full render → spec check plus motion scan.
+2. **Scripts.** For each premise, an AI writes `episode.json` from a prompt holding the gag/place/prop reference and the
+   three finished episodes as examples. `ladder.py` validates it, and the AI retries on errors (above).
+3. **Production.** `ladder.py` → `synth.py` → stills plus AI sheet review → full render → spec check plus motion scan.
    In this build I ran these by hand. Chaining them into one unattended runner is the first thing on the next-steps list.
    Measured on a 16 GB M5 Mac: **a full render takes 113–149 s per 36–37 s episode**, audio about 5 s, validation
    0.06 s. With a stills sheet and its review on top, that's 100 episodes in roughly 4–5 hours on one laptop, and renders
